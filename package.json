@@ -1,0 +1,24 @@
+{
+  "name": "fasi-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.18.0",
+    "create-react-class": "^15.6.3",
+    "namor": "^1.0.1",
+    "npm-utils": "^2.0.3",
+    "react": "^16.5.0",
+    "react-bootstrap-table": "^4.3.1",
+    "react-dom": "^16.5.0",
+    "react-json-table": "^0.1.1",
+    "react-scripts": "1.1.5",
+    "react-table": "^6.8.6",
+    "whatwg-fetch": "^2.0.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
