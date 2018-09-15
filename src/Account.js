@@ -6,6 +6,7 @@ let raw = [];
 
 const newAccount = (jsonObj) => {
     return {
+        id: jsonObj.id,
         name: jsonObj.name,
         cards: jsonObj.cards,
         phone: jsonObj.phone,
@@ -27,9 +28,7 @@ export function makeData() {
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => {
-      let straw = arrayAccounts(raw);
-      console.log("this be straw");
-      console.log(straw);
-      return straw;
+      raw = arrayAccounts(raw);
+      return raw;
     });
 }
