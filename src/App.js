@@ -9,6 +9,10 @@ import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
 import { Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert } from 'react-bootstrap';
 import { Link, Route,Switch} from 'react-router-dom';
+import {done} from './done';
+import Runner from './Runner';
+import Welcome from './welcome';
+import Login from './Login';
 
 class App extends React.Component {
   constructor(props, context) {
@@ -24,6 +28,11 @@ class App extends React.Component {
         pages: null,
         loading: true
       },
+      runner:{
+        data: [],
+        pages: null,
+        loading: true
+      },
       show: true,
       cardRow: <tr></tr>
     };
@@ -33,12 +42,129 @@ class App extends React.Component {
     this.getSubmitTarget = this.getSubmitTarget.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.addCardRow = this.addCardRow.bind(this);
+    this.handleAddCustomer = this.handleAddCustomer.bind(this);
+    this.getCardData = this.getCardData.bind(this);
+    this.getCustomerData = this.getCustomerData.bind(this);
+    this.fetchRunnerData = this.fetchRunnerData.bind(this);
+    this.fetchRunnerById = this.fetchRunnerById.bind(this);
+    this.handleAddRunner = this.handleAddRunner.bind(this);
   }
+
+  handleAddRunner(event){
+    event.preventDefault();
+    const data = new FormData(event.target);
+    // NOTE: you access FormData fields with `data.get(fieldName)`   
+    data.set('addRunner', 1);
+    fetch('http://localhost/', {
+      method: 'POST',
+      body: data,
+    }).then(reso => {
+      return reso.text();
+    }).then(resa => {
+      // switch(resa){
+      //   case "": break;
+      //   case "SuccessMore Success": window.location = '/done'; break;
+      //   case "Success": break;
+      //   default: break;
+      // }
+      if(resa.toString().localeCompare("Success")===0){
+          window.location = '/done';
+        }
+        else{
+          return(<Alert bsStyle="danger"><h4>Sorry something went wrong</h4><br/>its not your fault.</Alert>);
+        }
+    });
+  }
+
+  fetchRunnerById(id){
+    () => this.setState({runner:{loading:true}});
+    var form = new FormData();
+    form.set('getRunner',1);
+    form.set('id',id);
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: form
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({runner:{data,loading:false}});
+      })
+  }
+
+  fetchRunnerData(state, instance){
+    this.setState({runner:{loading:true}});
+    var form = new FormData();
+    form.set('runners',1);
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: form
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({runner:{data,loading:false}});
+      })
+  }
+
+  getCustomerData(id) {
+    () => this.setState({customer:{loading:true}});
+    var formData = new FormData();
+    formData.append('account', '1');
+    formData.append('id', id);
+
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({customer:{data,loading:false}});
+      })
+  }
+
+  getCardData(id) {
+    var formData = new FormData();
+    formData.append('card', '1');
+    formData.append('id', id);
+
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({card:{data}});
+      })
+  }
+
+  handleAddCustomer(event){
+    event.preventDefault();
+    const data = new FormData(event.target);
+    // NOTE: you access FormData fields with `data.get(fieldName)`   
+    data.set('addCustomer', 1);
+    fetch('http://localhost/', {
+      method: 'POST',
+      body: data,
+    }).then(reso => {
+      return reso.text();
+    }).then(resa => {
+      // switch(resa){
+      //   case "": break;
+      //   case "SuccessMore Success": window.location = '/done'; break;
+      //   case "Success": break;
+      //   default: break;
+      // }
+      if(resa.toString().localeCompare("SuccessMore Success")===0){
+          window.location = '/done';
+        }
+    });
+  }
+
   generateKey(pre) {
     return `${ pre }_${ new Date().getTime() }`;
   }
+  
   addCardRow(){
-    let row = <tr key={this.generateKey("card_row")}><td><input type="text" placeholder="Owner Name"/></td><td><input type="text" placeholder="Type"/></td><td><input type="text" placeholder="Bank"/></td><td><input type="text" placeholder="EXP"/></td><td><input type="text" placeholder="State"/></td><td><input type="text" placeholder="Credit"/></td><td><input type="text" placeholder="Drawn"/></td></tr>;
+    let row = <tr key={this.generateKey("card_row")}><td><input type="text" name="owname" placeholder="Owner Name"/></td><td><input type="text" name="type" placeholder="Type"/></td><td><input type="text" name="bank" placeholder="Bank"/></td><td><input type="text" name="exp" placeholder="EXP"/></td><td><input type="text" name="state" placeholder="State"/></td><td><input type="text" name="credit" placeholder="Credit"/></td><td><input type="text" name="drawn" placeholder="Drawn"/></td></tr>;
     
     this.setState({cardRow:[this.state.cardRow,row]}) ;
   }
@@ -74,16 +200,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    //this.getTarget().onClick = () => {
-      // console.log("b4b4b4");      
-      // let buttonRow = this.getTarget().parentNode;
-      // let table = buttonRow.parentNode;
-      // let row = <tr><td>ID</td><td>NUMBER</td><td>BANK</td><td>FAVOURITE COLOR</td><td>BLA</td><td>BLABLA</td></tr>;
-      // console.log("b4b4");
-      // //insertBefore(row,buttonRow);
-      // table.insertBefore(row,buttonRow);
-      // console.log("done");
-    //}
+
   }
 
 
@@ -96,7 +213,7 @@ class App extends React.Component {
         {
           Header: 'ID',
           accessor: 'id',
-          Cell: props => <span className='number'><Link to="/customer">{props.value}</Link></span>
+          Cell: props => <span className='number'><Link to={`/customer/${props.value}`}>{props.value}</Link></span>
         },
         {
           Header: 'Name',
@@ -115,7 +232,7 @@ class App extends React.Component {
           Header: 'CardsID',
           accessor: 'cards_id',
           id: 'cards_id',
-          Cell: props => <span className='number'><Link to="/card">{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
+          Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
         }
         ]}
       data={data}
@@ -125,7 +242,7 @@ class App extends React.Component {
       noDataText="No matching data !"
       filterable
       minRows={3}
-      defaultPageSize={5}
+      defaultPageSize={10}
       />
       <Link to="/addCustomer" className="button">ADD</Link>
       </div>
@@ -137,7 +254,8 @@ class App extends React.Component {
         columns={[
           {
             Header: 'ID',
-            accessor: 'id'
+            accessor: 'id',
+            Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
           },
           {
             Header: 'Name',
@@ -180,13 +298,13 @@ class App extends React.Component {
         noDataText="No matching data !"
         filterable
         minRows={3}
-        defaultPageSize={5}
+        defaultPageSize={10}
         className="-striped -highlight"
         />)};
 
         const alert404 = ( () => {
           return(
-            <Alert bsStyle="danger"><h4>fuck u looking for nigga?</h4><br/>we closed go home</Alert>
+            <Alert bsStyle="danger"><h4>Wrong Link?</h4><br/>its not your fault.</Alert>
           );
         });
 
@@ -199,12 +317,12 @@ class App extends React.Component {
             <br/>
             <Table ref={table => {this.addTable=table;}} responsive>
               <tbody>
-                <tr><td>Name:</td><td><input type="text" /></td></tr>
-                <tr><td>Phone</td><td><input type="text" /></td></tr>
+                <tr><td>Name:</td><td><input type="text" name="name" title="Name of account holder"/></td></tr>
+                <tr><td>Phone</td><td><input type="text" name="phone" title="Phone number of account holder"/></td></tr>
                 {this.state.cardRow}
                 <tr><td><Button bsStyle="success" ref={button => {this.target = button;}} onClick={this.addCardRow} >+ Add Card...</Button></td></tr>
                 <tr><td></td><td>
-                <Button ref={button => {this.submitTarget=button;}} >Premium Submit</Button>
+                <Button ref={button => {this.submitTarget=button;}} type="submit">Premium Submit</Button>
                 </td></tr>
               </tbody>
             </Table>
@@ -230,6 +348,225 @@ class App extends React.Component {
           show: this.state.show
         };
     
+        const Customer = ({ match }) => {
+          const { data , loading} = this.state.customer;
+          let id = match.params.id;
+          if(typeof(data) === 'undefined'){
+            return (<p></p>);
+          }
+          let custCardsData;
+          if(typeof(data[1]) !== 'undefined'){
+            custCardsData = data[1] || [];
+          }
+          var cusData = [];
+          if(typeof(data[0]) !== 'undefined'){
+            cusData = data[0];
+          }
+          try{
+          var customer;
+          if(typeof(data[0]) !== 'undefined'){
+            customer = cusData.map((customer,index) => {
+              return(
+                <Table ref={table => {this.addTable=table;}} key={index} responsive>
+                  <tbody>
+                    <tr><td>ID:</td><td>{customer.id}</td></tr>
+                    <tr><td>Name:</td><td>{customer.name}</td></tr>
+                    <tr><td>Cards:</td><td>{customer.cards}</td></tr>
+                    <tr><td>Phone:</td><td>{customer.phone}</td></tr>
+                    <tr><td>Card ID:</td><td>{customer.cards_id}</td></tr>
+                  </tbody>
+                </Table>
+              )})
+          }}
+          catch(error){
+            console.error(error);
+          }
+          finally{
+          return(
+          <div>
+            {customer}
+            <h3>ID: {match.params.id}</h3>
+
+            <ReactTable 
+              onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
+              noDataText="No matching data !"
+              loading = {loading}
+              defaultPageSize = {1}
+              minRows = {1}
+              columns = {
+                [
+                  {
+                    id : 'id',
+                    Header : 'ID',
+                    accessor : 'id',
+                    Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                  },
+                  {
+                    id : 'owname',
+                    Header : 'Owner Name',
+                    accessor : 'owname'
+                  }
+                ]
+              }
+              data = {custCardsData}/>
+          </div>
+          );}}
+
+        const Card = ({ match }) => {
+          const {data} = this.state.card;
+          let id = match.params.id;
+          this.getCardData(id);
+          const cards = data.map((card,index) => 
+            (
+            <Table>
+              <tbody>
+                <tr><td>ID:</td><td>{card.id}</td></tr>
+                <tr><td>Name:</td><td>{card.owname}</td></tr>
+                <tr><td>Type:</td><td>{card.type}</td></tr>
+                <tr><td>Bank:</td><td>{card.bank}</td></tr>
+                <tr><td>EXP:</td><td>{card.exp}</td></tr>
+                <tr><td>State:</td><td>{card.state}</td></tr>
+                <tr><td>Credit:</td><td>{card.credit}</td></tr>
+                <tr><td>Drawn:</td><td>{card.drawn}</td></tr>
+                <tr><td>Number:</td><td>{12345678}</td></tr>
+                <tr><td>CODE:</td><td>{1234}</td></tr>
+              </tbody>
+            </Table>
+          ));
+
+          return(
+          <div>
+            {cards}
+          </div>
+        )};
+
+        const home_header = () => (
+          <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h1 className="App-title">Welcome to Fasi currency services</h1>
+          </header>
+        );
+
+        const home_message = () => (
+          <p className="App-intro">
+            Soon coming to mobile platforms.
+          </p>
+        );
+
+        const pg_runner = () => {
+          const { data , loading} = this.state.runner;
+         return (
+           <div>
+             <ReactTable 
+              onFetchData={this.fetchRunnerData} 
+              noDataText="No matching data !"
+              loading = {loading}
+              defaultPageSize = {10}
+              minRows = {3}
+              columns = {
+                [
+                  {
+                    id : 'id',
+                    Header : 'ID',
+                    accessor : 'id',
+                    Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                  },
+                  {
+                    id : 'name',
+                    Header : 'Name',
+                    accessor : 'name'
+                  },
+                  {
+                    id : 'fee',
+                    Header : 'Fee',
+                    accessor : 'fee'
+                  },
+                  {
+                    id : 'credit',
+                    Header : 'Credit',
+                    accessor : 'credit'
+                  }
+                ]
+              }
+              data = {data}/>
+           </div>
+         )
+        };
+
+        const cmp_runner = ({ match }) => {
+          const { data , loading} = this.state.runner;
+          let id = match.params.id;
+          return (
+            <div>
+              {
+                data.map((runner,index) => {
+                  return(
+                    <Table key={"runner"+index}>
+                      <tbody>
+                        <tr><td>Name</td><td>{runner.name}</td></tr>
+                        {/* <tr><td>Phone</td><td>{runner.phone}</td></tr> */}
+                        <tr><td>Fee</td><td>{runner.fee}</td></tr>
+                        <tr><td>Credit</td><td>{runner.credit}</td></tr>
+                        <tr><td>Drawn</td><td>{runner.drawn}</td></tr>
+                        <tr><td>Diposited</td><td>{runner.diposited}</td></tr>
+                        <tr><td></td><td></td></tr>
+                        <tr><td></td><td></td></tr>
+                      </tbody>
+                    </Table>
+                  )
+                })
+              }
+              
+              <ReactTable 
+               onFetchData={this.fetchRunnerById(id)} 
+               noDataText="No matching data !"
+               loading = {loading}
+               defaultPageSize = {1}
+               minRows = {1}
+               columns = {
+                 [
+                   {
+                     id : 'id',
+                     Header : 'ID',
+                     accessor : 'id',
+                     Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                   },
+                   {
+                     id : 'name',
+                     Header : 'Name',
+                     accessor : 'name'
+                   },
+                   {
+                     id : 'fee',
+                     Header : 'Fee',
+                     accessor : 'fee'
+                   },
+                   {
+                     id : 'credit',
+                     Header : 'Credit',
+                     accessor : 'credit'
+                   }
+                 ]
+               }
+               data = {data}/>
+            </div>
+          )
+        }
+
+        const Users = () => {
+          return(
+            <div>
+              <Table>
+                <thead>
+                  <tr><td>User</td><td>Action</td></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Admin</td><td><a>Change Password</a></td></tr>
+                </tbody>
+              </Table>
+            </div>
+          );
+        }
     return (
       <div className="App">
         <Navbar inverse collapseOnSelect>
@@ -248,11 +585,12 @@ class App extends React.Component {
                 Runners
               </NavItem>
               <NavDropdown eventKey={3} title="More" id="basic-nav-dropdown">
-                <MenuItem eventKey={3.1} href="/cards">Cards</MenuItem>
+                <MenuItem eventKey={3.1} href="/cards" title="Shows Cards Table">Cards</MenuItem>
+                <MenuItem eventKey={3.1} href="/transactions" title="Shows Transaction Table">Transactions</MenuItem>
                 <MenuItem eventKey={3.2}>Statistics</MenuItem>
                 <MenuItem eventKey={3.3}>Settings</MenuItem>
                 <MenuItem divider />
-                <MenuItem eventKey={3.3}>Users</MenuItem>
+                <MenuItem eventKey={3.3} href="/users" title="Shows Users Info">Users</MenuItem>
               </NavDropdown>
             </Nav>
             <Nav pullRight>
@@ -265,20 +603,23 @@ class App extends React.Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to Fasi currency services</h1>
-        </header>
-        <p className="App-intro">
-          Soon coming to mobile platforms.
-        </p>
+        
         <Switch>
         <Route path="/customers" render={pg_customer} />
         <Route path="/cards" render={pg_card} />
         <Route path="/addCustomer" render={pg_addCustomer} />
         <Route path="/addCard" />
-        <Route path="/runners" />
-        <Route render={alert404}/>
+        <Route path="/runners" render={pg_runner} />
+        <Route path="/runner/:id" component={cmp_runner} />
+        <Route path="/done" render={done}/>
+        <Route path="/transactions" render={home_header}/>
+        <Route path="/users" render={Users}/>
+        <Route path="/customer/:id" component={Customer} />
+        <Route path="/card/:id" component={Card} />
+        <Route path="/fasi" render={home_header} />
+        <Route path="/login" component={Login} />
+        <Route path="/" component={Welcome}/>
+        <Route render={alert404} />
         </Switch>
       </div>
     );
