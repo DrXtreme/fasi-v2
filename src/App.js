@@ -7,12 +7,14 @@ import 'react-table/react-table.css';
 import 'whatwg-fetch';
 import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
-import { Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert } from 'react-bootstrap';
+import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert } from 'react-bootstrap';
 import { Link, Route,Switch} from 'react-router-dom';
 import {done} from './done';
 import Runner from './Runner';
 import Welcome from './welcome';
 import Login from './Login';
+import { LinkContainer } from 'react-router-bootstrap';
+
 
 class App extends React.Component {
   constructor(props, context) {
@@ -20,6 +22,7 @@ class App extends React.Component {
     this.state = {
       customer: {
         data: [],
+        data2: [],
         pages: null,
         loading: true
       },
@@ -30,6 +33,12 @@ class App extends React.Component {
       },
       runner:{
         data: [],
+        pages: null,
+        loading: true
+      },
+      sendCard: {
+        cards4send: [],
+        runners: [],
         pages: null,
         loading: true
       },
@@ -48,7 +57,60 @@ class App extends React.Component {
     this.fetchRunnerData = this.fetchRunnerData.bind(this);
     this.fetchRunnerById = this.fetchRunnerById.bind(this);
     this.handleAddRunner = this.handleAddRunner.bind(this);
+    this.sendCard2Runner = this.sendCard2Runner.bind(this);
+    this.fetchCards4Send = this.fetchCards4Send.bind(this);
   }
+
+  fetchCards4Send(){
+    var form = new FormData();
+    form.set('cards4send',1);
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.json())
+    .then(cards4send => {console.log(cards4send);
+      this.setState({sendCard:{cards4send}});
+    })
+    var form2 = new FormData();
+    form.set('runners',1);
+    fetch('http://localhost',{
+      method: 'POST',
+      body: form2
+    })
+    .then(res => res.json())
+    .then(runners => {console.log(runners);
+      this.setState({sendCard:{runners}});
+    })
+  }
+
+  sendCard2Runner(card_id,runner_id){
+    var form = new FormData();
+    form.set('sendCard',1);
+    form.set('card_id', card_id);
+    form.set('runner_id', runner_id);
+    fetch('http://localhost/',{
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.text())
+    .then(reso => {
+      // switch(resa){
+      //   case "": break;
+      //   case "SuccessMore Success": window.location = '/done'; break;
+      //   case "Success": break;
+      //   default: break;
+      // }
+      if(reso.toString().localeCompare("Success")===0){
+        window.location = '/done';
+      }
+      else{
+        return(<Alert bsStyle="danger"><h4>Sorry something went wrong</h4><br/>its not your fault.</Alert>);
+      }
+    });
+  }
+
+  
 
   handleAddRunner(event){
     event.preventDefault();
@@ -117,7 +179,9 @@ class App extends React.Component {
       })
       .then(res => res.json())
       .then(data => {
-        this.setState({customer:{data,loading:false}});
+        var data2=data[1];
+        var data = data[0];
+        this.setState({customer:{data,data2,loading:false}});
       })
   }
 
@@ -199,9 +263,7 @@ class App extends React.Component {
       });
   }
 
-  componentDidMount() {
-
-  }
+ 
 
 
   render() {
@@ -349,23 +411,23 @@ class App extends React.Component {
         };
     
         const Customer = ({ match }) => {
-          const { data , loading} = this.state.customer;
+          const { data , data2 , loading} = this.state.customer;
           let id = match.params.id;
-          if(typeof(data) === 'undefined'){
-            return (<p></p>);
-          }
-          let custCardsData;
-          if(typeof(data[1]) !== 'undefined'){
-            custCardsData = data[1] || [];
-          }
-          var cusData = [];
-          if(typeof(data[0]) !== 'undefined'){
-            cusData = data[0];
-          }
+          // if(typeof(data) === 'undefined'){
+            // return (<p></p>);
+          // }
+          // let custCardsData;
+          // if(typeof(data2) !== 'undefined'){
+            // custCardsData = data2 || [];
+          // }
+          // var cusData = [];
+          // if(typeof(data[0]) !== 'undefined'){
+            // cusData = data;
+          // }
           try{
           var customer;
-          if(typeof(data[0]) !== 'undefined'){
-            customer = cusData.map((customer,index) => {
+          // if(typeof(data[0]) !== 'undefined'){
+            customer = data.map((customer,index) => {
               return(
                 <Table ref={table => {this.addTable=table;}} key={index} responsive>
                   <tbody>
@@ -377,7 +439,7 @@ class App extends React.Component {
                   </tbody>
                 </Table>
               )})
-          }}
+          }
           catch(error){
             console.error(error);
           }
@@ -408,17 +470,17 @@ class App extends React.Component {
                   }
                 ]
               }
-              data = {custCardsData}/>
+              data = {data2}/>
           </div>
           );}}
 
         const Card = ({ match }) => {
           const {data} = this.state.card;
           let id = match.params.id;
-          this.getCardData(id);
-          const cards = data.map((card,index) => 
-            (
-            <Table>
+          setInterval(this.getCardData(id),300);
+          // setTimeout(() => (this.getCardData(id),300));
+          const cards = data.map((card,index) => (
+            <Table key={index}>
               <tbody>
                 <tr><td>ID:</td><td>{card.id}</td></tr>
                 <tr><td>Name:</td><td>{card.owname}</td></tr>
@@ -477,6 +539,11 @@ class App extends React.Component {
                     accessor : 'name'
                   },
                   {
+                    id : 'phone',
+                    Header : 'phone',
+                    accessor : 'phone'
+                  },
+                  {
                     id : 'fee',
                     Header : 'Fee',
                     accessor : 'fee'
@@ -489,13 +556,70 @@ class App extends React.Component {
                 ]
               }
               data = {data}/>
+              <Link to="/addRunner" className="button">ADD</Link>
            </div>
          )
         };
+        
+        const sendCard = () => {
+          const { runners, cards4send , loading} = this.state.sendCard;
+          // var runner = this.fetchRunnerById(id);
+          // () => this.fetchCards4Send;
+          // () => this.sendCard2Runner(cardid,ruinnerisd);
+
+          // () => this.fetchCards4Send();
+          return (
+            <div>
+              <ReactTable
+              columns={[
+                {
+                  accessor: 'id',
+                  Cell: <span><input type="checkbox" value={this.props.value} /></span>
+                },
+                {
+                  Header: 'ID',
+                  accessor: 'id',
+                  Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                },
+                {
+                  Header: 'Owner Name',
+                  accessor: 'owname'
+                }
+              ]}
+              data = {cards4send}
+              loading = {loading}
+              onFetchData = {this.fetchCards4Send}
+              defaultPageSize = {10}
+              minRows = {3}
+              noDataText="No matching data !"
+              />
+              <div>
+              <Well bsSize="large">
+                <form>
+                  {/* <select> */}
+                    {
+                    // runners.map((runner,index) => {
+                    //   return(
+                    //     <select>
+                    //     <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
+                    //     </select>
+                    //   )
+                    // })
+                    }
+                  {/* </select> */}
+                  <Button>Submit</Button>
+                </form>
+              </Well>
+            </div>
+            </div>
+          )
+        }
 
         const cmp_runner = ({ match }) => {
-          const { data , loading} = this.state.runner;
+          const { data } = this.state.runner;
           let id = match.params.id;
+          this.fetchRunnerById(id);
+          const gotoSendCard = () => {window.location = '/sendCard'};
           return (
             <div>
               {
@@ -503,52 +627,23 @@ class App extends React.Component {
                   return(
                     <Table key={"runner"+index}>
                       <tbody>
+                        <tr><td>ID</td><td>{runner.id}</td></tr>
                         <tr><td>Name</td><td>{runner.name}</td></tr>
-                        {/* <tr><td>Phone</td><td>{runner.phone}</td></tr> */}
+                        <tr><td>Phone</td><td>{runner.phone}</td></tr>
                         <tr><td>Fee</td><td>{runner.fee}</td></tr>
                         <tr><td>Credit</td><td>{runner.credit}</td></tr>
                         <tr><td>Drawn</td><td>{runner.drawn}</td></tr>
                         <tr><td>Diposited</td><td>{runner.diposited}</td></tr>
-                        <tr><td></td><td></td></tr>
-                        <tr><td></td><td></td></tr>
+                        <tr><td>Cards With</td><td></td></tr>
+                        <tr><td>Cards Pending from</td><td></td></tr>
+                        <tr><td>Cards Pending to</td><td></td></tr>
+                        <tr><td>Date Created</td><td>{runner.created}</td></tr>
+                        <tr><td><Button onClick={gotoSendCard}>Send Card</Button></td><td></td></tr>
                       </tbody>
                     </Table>
                   )
                 })
               }
-              
-              <ReactTable 
-               onFetchData={this.fetchRunnerById(id)} 
-               noDataText="No matching data !"
-               loading = {loading}
-               defaultPageSize = {1}
-               minRows = {1}
-               columns = {
-                 [
-                   {
-                     id : 'id',
-                     Header : 'ID',
-                     accessor : 'id',
-                     Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
-                   },
-                   {
-                     id : 'name',
-                     Header : 'Name',
-                     accessor : 'name'
-                   },
-                   {
-                     id : 'fee',
-                     Header : 'Fee',
-                     accessor : 'fee'
-                   },
-                   {
-                     id : 'credit',
-                     Header : 'Credit',
-                     accessor : 'credit'
-                   }
-                 ]
-               }
-               data = {data}/>
             </div>
           )
         }
@@ -567,6 +662,31 @@ class App extends React.Component {
             </div>
           );
         }
+
+        const pg_addRunner = () => {
+          return(
+            <form onSubmit={this.handleAddRunner}>
+              <label>
+                New Runner:
+              </label>
+              <br/>
+              <Table ref={table => {this.addTable=table;}} responsive>
+                <tbody>
+                  <tr><td>Name:</td><td><input type="text" name="name" title="Name of runner"/></td></tr>
+                  <tr><td>Phone</td><td><input type="text" name="phone" title="Phone number of runner"/></td></tr>
+                  <tr><td>Fee</td><td><input type="text" name="fee" title="Fee per card in USD"/></td></tr>
+                  <tr><td></td><td>
+                  <Button ref={button => {this.submitTarget=button;}} type="submit">Submit</Button>
+                  </td></tr>
+                </tbody>
+              </Table>
+              <Overlay {...submitProps} placement="left">
+                <Tooltip id="overload-left" onClick={this.handleToggle}>Whenever you're ready!</Tooltip>
+              </Overlay>
+            </form>
+            );
+        }
+
     return (
       <div className="App">
         <Navbar inverse collapseOnSelect>
@@ -578,19 +698,29 @@ class App extends React.Component {
           </Navbar.Header>
           <Navbar.Collapse>
             <Nav>
-              <NavItem eventKey={1} href="/customers">
-                Customers
-              </NavItem>
-              <NavItem eventKey={2} href="/runners">
-                Runners
-              </NavItem>
+              <LinkContainer to="/customers">
+                <NavItem eventKey={1}>
+                  Customers
+                </NavItem>
+              </LinkContainer>
+              <LinkContainer to="/runners">
+                <NavItem eventKey={2}>
+                  Runners
+                </NavItem>
+              </LinkContainer>
               <NavDropdown eventKey={3} title="More" id="basic-nav-dropdown">
-                <MenuItem eventKey={3.1} href="/cards" title="Shows Cards Table">Cards</MenuItem>
-                <MenuItem eventKey={3.1} href="/transactions" title="Shows Transaction Table">Transactions</MenuItem>
+                <LinkContainer to="/cards">
+                  <MenuItem eventKey={3.1}title="Shows Cards Table">Cards</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/transactions">
+                  <MenuItem eventKey={3.1}title="Shows Transaction Table">Transactions</MenuItem>
+                </LinkContainer>
                 <MenuItem eventKey={3.2}>Statistics</MenuItem>
                 <MenuItem eventKey={3.3}>Settings</MenuItem>
                 <MenuItem divider />
-                <MenuItem eventKey={3.3} href="/users" title="Shows Users Info">Users</MenuItem>
+                <LinkContainer to="/users">
+                <MenuItem eventKey={3.3} title="Shows Users Info">Users</MenuItem>
+                </LinkContainer>
               </NavDropdown>
             </Nav>
             <Nav pullRight>
@@ -610,14 +740,16 @@ class App extends React.Component {
         <Route path="/addCustomer" render={pg_addCustomer} />
         <Route path="/addCard" />
         <Route path="/runners" render={pg_runner} />
-        <Route path="/runner/:id" component={cmp_runner} />
+        <Route path="/runner/:id" render={cmp_runner} />
+        <Route path="/addRunner" render={pg_addRunner} />
+        <Route path="/sendCard" render={sendCard}/>
         <Route path="/done" render={done}/>
         <Route path="/transactions" render={home_header}/>
         <Route path="/users" render={Users}/>
-        <Route path="/customer/:id" component={Customer} />
-        <Route path="/card/:id" component={Card} />
+        <Route path="/customer/:id" render={Customer} />
+        <Route path="/card/:id" render={Card} />
         <Route path="/fasi" render={home_header} />
-        <Route path="/login" component={Login} />
+        <Route path="/login" render={Login} />
         <Route path="/" component={Welcome}/>
         <Route render={alert404} />
         </Switch>
