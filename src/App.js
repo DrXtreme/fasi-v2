@@ -7,13 +7,35 @@ import 'react-table/react-table.css';
 import 'whatwg-fetch';
 import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
+import { makeRunnerData } from './RunnerAccount';
 import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert } from 'react-bootstrap';
-import { Link, Route,Switch} from 'react-router-dom';
+import { Link, Route,Switch,Redirect,withRouter} from 'react-router-dom';
 import {done} from './done';
 import Runner from './Runner';
 import Welcome from './welcome';
 import Login from './Login';
 import { LinkContainer } from 'react-router-bootstrap';
+import 'react-notifications/lib/notifications.css';
+import {NotificationContainer, NotificationManager} from 'react-notifications';
+import checkboxHOC from "react-table/lib/hoc/selectTable";
+// import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+const CheckboxTable = checkboxHOC(ReactTable);
+
+function getColumns(data) {
+  const columns = [];
+  const sample = data[0];
+  Object.keys(sample).forEach(key => {
+    if (key !== "_id") {
+      columns.push({
+        accessor: key,
+        Header: key
+      });
+    }
+  });
+  return columns;
+}
 
 
 class App extends React.Component {
@@ -40,10 +62,16 @@ class App extends React.Component {
         cards4send: [],
         runners: [],
         pages: null,
-        loading: true
-      },
+        loading: true,
+        selection: [],
+        selectAll: false,
+        selectedRunner: null
+    },
       show: true,
-      cardRow: <tr></tr>
+      cardRow: <tr></tr>,
+      selection: [],
+      selectAll: false,
+      selectedRunner: null
     };
     this.fetchCustomerData = this.fetchCustomerData.bind(this);
     this.fetchCardData = this.fetchCardData.bind(this);
@@ -59,28 +87,115 @@ class App extends React.Component {
     this.handleAddRunner = this.handleAddRunner.bind(this);
     this.sendCard2Runner = this.sendCard2Runner.bind(this);
     this.fetchCards4Send = this.fetchCards4Send.bind(this);
+    // this.addIdToSelected = this.addIdToSelected.bind(this);
+    // this.removeIdFromSelected = this.removeIdFromSelected.bind(this);
   }
+
+  toggleSelection = (key, shift, row) => {
+    /*
+      Implementation of how to manage the selection state is up to the developer.
+      This implementation uses an array stored in the component state.
+      Other implementations could use object keys, a Javascript Set, or Redux... etc.
+    */
+    // start off with the existing state
+    let selection = [...this.state.selection];
+    const keyIndex = selection.indexOf(key);
+    // check to see if the key exists
+    if (keyIndex >= 0) {
+      // it does exist so we will remove it using destructing
+      selection = [
+        ...selection.slice(0, keyIndex),
+        ...selection.slice(keyIndex + 1)
+      ];
+    } else {
+      // it does not exist so add it
+      selection.push(key);
+    }
+    // update the state
+    this.setState({ selection });
+  };
+
+  toggleAll = () => {
+    /*
+      'toggleAll' is a tricky concept with any filterable table
+      do you just select ALL the records that are in your data?
+      OR
+      do you only select ALL the records that are in the current filtered data?
+      
+      The latter makes more sense because 'selection' is a visual thing for the user.
+      This is especially true if you are going to implement a set of external functions
+      that act on the selected information (you would not want to DELETE the wrong thing!).
+      
+      So, to that end, access to the internals of ReactTable are required to get what is
+      currently visible in the table (either on the current page or any other page).
+      
+      The HOC provides a method call 'getWrappedInstance' to get a ref to the wrapped
+      ReactTable and then get the internal state and the 'sortedData'. 
+      That can then be iterrated to get all the currently visible records and set
+      the selection state.
+    */
+    const selectAll = this.state.selectAll ? false : true;
+    const selection = [];
+    if (selectAll) {
+      // we need to get at the internals of ReactTable
+      const wrappedInstance = this.checkboxTable.getWrappedInstance();
+      // the 'sortedData' property contains the currently accessible records based on the filter and sort
+      const currentRecords = wrappedInstance.getResolvedState().sortedData;
+      // we just push all the IDs onto the selection array
+      currentRecords.forEach(item => {
+        selection.push(item._original.id);
+      });
+    }
+    this.setState({ selectAll, selection });
+  };
+
+  isSelected = key => {
+    /*
+      Instead of passing our external selection state we provide an 'isSelected'
+      callback and detect the selection state ourselves. This allows any implementation
+      for selection (either an array, object keys, or even a Javascript Set object).
+    */
+    return this.state.selection.includes(key);
+  };
+
+  // addIdToSelected(id){
+  //   var selected = [];
+  //   selected.push(this.state.selected);
+  //   selected.push(id);
+  //   this.setState({selected:selected})
+  // }
+
+  // removeIdFromSelected(id){
+  //   var selected = [];
+  //   selected.push(this.state.selected);
+  //   selected.pop(id);
+  //   this.setState({selected:selected})
+  // }
 
   fetchCards4Send(){
     var form = new FormData();
-    form.set('cards4send',1);
+    form.set('getCards4runners',1);
     fetch('http://localhost/',{
       method: 'POST',
       body: form
     })
     .then(res => res.json())
-    .then(cards4send => {console.log(cards4send);
-      this.setState({sendCard:{cards4send}});
+    .then(data => {
+      var runners = data[1];
+      var cards4send = data[0];
+      this.setState({sendCard:{cards4send:cards4send,runners:runners,loading:false}});
     })
-    var form2 = new FormData();
-    form.set('runners',1);
-    fetch('http://localhost',{
-      method: 'POST',
-      body: form2
-    })
-    .then(res => res.json())
-    .then(runners => {console.log(runners);
-      this.setState({sendCard:{runners}});
+  }
+
+  executeSendCard(){
+    this.state.selection.map((id,index) => {
+      try {
+        this.sendCard2Runner(id,this.state.selectedRunner);
+        NotificationManager.success("Card Sent To Runner","Success");
+      }
+      catch(error){
+        NotificationManager.error("Can't Send Card","Something Went Wrong");
+      }
     })
   }
 
@@ -102,10 +217,10 @@ class App extends React.Component {
       //   default: break;
       // }
       if(reso.toString().localeCompare("Success")===0){
-        window.location = '/done';
+        this.createNotification('success','Card successfully sent to runner','Success');
       }
       else{
-        return(<Alert bsStyle="danger"><h4>Sorry something went wrong</h4><br/>its not your fault.</Alert>);
+        this.createNotification('error','Failed to send card to runner','Success');
       }
     });
   }
@@ -123,17 +238,11 @@ class App extends React.Component {
     }).then(reso => {
       return reso.text();
     }).then(resa => {
-      // switch(resa){
-      //   case "": break;
-      //   case "SuccessMore Success": window.location = '/done'; break;
-      //   case "Success": break;
-      //   default: break;
-      // }
       if(resa.toString().localeCompare("Success")===0){
-          window.location = '/done';
+        NotificationManager.success('Added New Runner','Success')
         }
         else{
-          return(<Alert bsStyle="danger"><h4>Sorry something went wrong</h4><br/>its not your fault.</Alert>);
+          this.createNotification('error','Failed to add runner','ERROR');
         }
     });
   }
@@ -153,18 +262,13 @@ class App extends React.Component {
       })
   }
 
-  fetchRunnerData(state, instance){
-    this.setState({runner:{loading:true}});
-    var form = new FormData();
-    form.set('runners',1);
-    fetch('http://localhost/',{
-      method: 'POST',
-      body: form
-      })
-      .then(res => res.json())
-      .then(data => {
-        this.setState({runner:{data,loading:false}});
-      })
+  fetchRunnerData(state, instance) {
+    this.setState.loading=true;
+    makeRunnerData()
+    .then(res => {
+      let data = res;
+      this.setState({runner:{data,loading:false}});
+    });
   }
 
   getCustomerData(id) {
@@ -180,7 +284,7 @@ class App extends React.Component {
       .then(res => res.json())
       .then(data => {
         var data2=data[1];
-        var data = data[0];
+        data = data[0];
         this.setState({customer:{data,data2,loading:false}});
       })
   }
@@ -202,6 +306,7 @@ class App extends React.Component {
 
   handleAddCustomer(event){
     event.preventDefault();
+    NotificationManager.warning("Please wait...","Adding New Customer");
     const data = new FormData(event.target);
     // NOTE: you access FormData fields with `data.get(fieldName)`   
     data.set('addCustomer', 1);
@@ -218,7 +323,14 @@ class App extends React.Component {
       //   default: break;
       // }
       if(resa.toString().localeCompare("SuccessMore Success")===0){
-          window.location = '/done';
+          NotificationManager.success("Added New Customer","Success");
+          // window.location='/customers';
+          // return(<Redirect to='/customers'/>);
+          // this.setState({toCustomers:true});
+          this.props.history.push('/customers');
+        }
+        else{
+          NotificationManager.error("Can't Add Customer!","Something went wrong");
         }
     });
   }
@@ -267,7 +379,9 @@ class App extends React.Component {
 
 
   render() {
-    
+    if (this.state.toCustomers === true) {
+      return <Redirect to='/' />
+    }
     const pg_customer = () => { 
       const { data , loading} = this.state.customer;
       return( <div><ReactTable
@@ -297,6 +411,7 @@ class App extends React.Component {
           Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
         }
         ]}
+      className="-striped -highlight"
       data={data}
       //pages={pages} // Display the total number of pages
       loading={loading} // Display the loading overlay when we need it
@@ -306,7 +421,7 @@ class App extends React.Component {
       minRows={3}
       defaultPageSize={10}
       />
-      <Link to="/addCustomer" className="button">ADD</Link>
+      <Link to="/addCustomer" className="btn btn-info">ADD</Link>
       </div>
       )};
 
@@ -450,6 +565,7 @@ class App extends React.Component {
             <h3>ID: {match.params.id}</h3>
 
             <ReactTable 
+              className="-striped -highlight"
               onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
               noDataText="No matching data !"
               loading = {loading}
@@ -515,66 +631,137 @@ class App extends React.Component {
           </p>
         );
 
-        const pg_runner = () => {
+        const pg_runner = () => { 
           const { data , loading} = this.state.runner;
-         return (
-           <div>
-             <ReactTable 
-              onFetchData={this.fetchRunnerData} 
-              noDataText="No matching data !"
-              loading = {loading}
-              defaultPageSize = {10}
-              minRows = {3}
-              columns = {
-                [
-                  {
-                    id : 'id',
-                    Header : 'ID',
-                    accessor : 'id',
-                    Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
-                  },
-                  {
-                    id : 'name',
-                    Header : 'Name',
-                    accessor : 'name'
-                  },
-                  {
-                    id : 'phone',
-                    Header : 'phone',
-                    accessor : 'phone'
-                  },
-                  {
-                    id : 'fee',
-                    Header : 'Fee',
-                    accessor : 'fee'
-                  },
-                  {
-                    id : 'credit',
-                    Header : 'Credit',
-                    accessor : 'credit'
-                  }
-                ]
-              }
-              data = {data}/>
-              <Link to="/addRunner" className="button">ADD</Link>
-           </div>
-         )
-        };
+          return( <div><ReactTable
+          columns={[
+            {
+              Header : 'ID',
+              accessor : 'id',
+              Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+            },
+            {
+              id : 'name',
+              Header : 'Name',
+              accessor : 'name'
+            },
+            {
+              id : 'phone',
+              Header : 'phone',
+              accessor : 'phone'
+            },
+            {
+              id : 'fee',
+              Header : 'Fee',
+              accessor : 'fee'
+            },
+            {
+              id : 'credit',
+              Header : 'Credit',
+              accessor : 'credit'
+            }
+            ]}
+          className="-striped -highlight"
+          data={data}
+          //pages={pages} // Display the total number of pages
+          loading={loading} // Display the loading overlay when we need it
+          onFetchData={this.fetchRunnerData} // Request new data when things change
+          noDataText="No matching data !"
+          filterable
+          minRows={3}
+          defaultPageSize={10}
+          />
+          <Link to="/addRunner" className="btn btn-info">ADD</Link>
+          </div>
+          )};
+        
         
         const sendCard = () => {
           const { runners, cards4send , loading} = this.state.sendCard;
-          // var runner = this.fetchRunnerById(id);
-          // () => this.fetchCards4Send;
-          // () => this.sendCard2Runner(cardid,ruinnerisd);
-
-          // () => this.fetchCards4Send();
+          const data = cards4send;
+          const { toggleSelection, toggleAll, isSelected, logSelection } = this;
+          const { selectAll } = this.state.sendCard;
+          const { columns } = this.state;
+          const checkboxProps = {
+            selectAll,
+            isSelected,
+            toggleSelection,
+            toggleAll,
+            selectType: "checkbox",
+            getTrProps: (s, r) => {
+              // someone asked for an example of a background color change
+              // here it is...
+              if(typeof(r) !== 'undefined'){
+                const selected = this.isSelected(r.original.id);console.log(this.state.selection);
+                  return {
+                    style: {
+                      backgroundColor: selected ? "lightgreen" : "inherit"
+                      // color: selected ? 'white' : 'inherit',
+                    }
+                  };
+              }else{
+                return {};
+              }
+            }
+          };
+          const opt_runners = (
+            <select>
+              {
+                runners.map((runner,index) => (
+                  <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
+                ))
+              }
+            </select>
+          )
+            
           return (
             <div>
-              <ReactTable
+              <h3>Send Cards</h3>
+              <CheckboxTable
+                ref={r => (this.checkboxTable = r)}
+                onFetchData = {this.fetchCards4Send}
+                data={data}
+                columns={[
+                  {
+                    id: "checkbox",
+                    Cell:<span><input type="checkbox" /></span>
+                  },
+                  {
+                    Header: 'ID',
+                    accessor: 'id',
+                    Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                  },
+                  {
+                    Header: 'Owner Name',
+                    accessor: 'owname'
+                  }
+                ]}
+                defaultPageSize={10}
+                className="-striped -highlight"
+                {...checkboxProps}
+              />
+              {/* <ReactTable
+              getTrProps={(state, rowInfo) => {
+                if (rowInfo && rowInfo.row) {
+                  return {
+                    onClick: (e) => {
+                      this.setState({
+                        selected: rowInfo.index
+                      })
+                    },
+                    style: {
+                      background: rowInfo.index === this.state.selected ? '#00afec' : 'white',
+                      color: rowInfo.index === this.state.selected ? 'white' : 'black'
+                    }
+                  }
+                }else{
+                  return {}
+                }
+              }}
               columns={[
                 {
-                  accessor: 'id',
-                  Cell: <span><input type="checkbox" value={this.props.value} /></span>
+                  id: "checkbox",
+                  Cell:<span><input type="checkbox" /></span>
                 },
                 {
                   Header: 'ID',
@@ -591,22 +778,15 @@ class App extends React.Component {
               onFetchData = {this.fetchCards4Send}
               defaultPageSize = {10}
               minRows = {3}
+              className="-striped -highlight"
               noDataText="No matching data !"
-              />
+              /> */}
               <div>
               <Well bsSize="large">
-                <form>
-                  {/* <select> */}
+                <form onSubmit={this.sendCard2Runner}>
                     {
-                    // runners.map((runner,index) => {
-                    //   return(
-                    //     <select>
-                    //     <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
-                    //     </select>
-                    //   )
-                    // })
+                      opt_runners
                     }
-                  {/* </select> */}
                   <Button>Submit</Button>
                 </form>
               </Well>
@@ -638,7 +818,7 @@ class App extends React.Component {
                         <tr><td>Cards Pending from</td><td></td></tr>
                         <tr><td>Cards Pending to</td><td></td></tr>
                         <tr><td>Date Created</td><td>{runner.created}</td></tr>
-                        <tr><td><Button onClick={gotoSendCard}>Send Card</Button></td><td></td></tr>
+                        <tr><td><Button onClick={gotoSendCard} className="btn btn-info">Send Card</Button></td><td></td></tr>
                       </tbody>
                     </Table>
                   )
@@ -676,7 +856,7 @@ class App extends React.Component {
                   <tr><td>Phone</td><td><input type="text" name="phone" title="Phone number of runner"/></td></tr>
                   <tr><td>Fee</td><td><input type="text" name="fee" title="Fee per card in USD"/></td></tr>
                   <tr><td></td><td>
-                  <Button ref={button => {this.submitTarget=button;}} type="submit">Submit</Button>
+                  <Button ref={button => {this.submitTarget=button;}} type="submit" className="btn btn-info">Submit</Button>
                   </td></tr>
                 </tbody>
               </Table>
@@ -686,6 +866,10 @@ class App extends React.Component {
             </form>
             );
         }
+
+        
+
+        
 
     return (
       <div className="App">
@@ -738,7 +922,6 @@ class App extends React.Component {
         <Route path="/customers" render={pg_customer} />
         <Route path="/cards" render={pg_card} />
         <Route path="/addCustomer" render={pg_addCustomer} />
-        <Route path="/addCard" />
         <Route path="/runners" render={pg_runner} />
         <Route path="/runner/:id" render={cmp_runner} />
         <Route path="/addRunner" render={pg_addRunner} />
@@ -749,10 +932,14 @@ class App extends React.Component {
         <Route path="/customer/:id" render={Customer} />
         <Route path="/card/:id" render={Card} />
         <Route path="/fasi" render={home_header} />
-        <Route path="/login" render={Login} />
+        <Route path="/login" component={Login} />
         <Route path="/" component={Welcome}/>
+        <Route path="/addCard" />
         <Route render={alert404} />
         </Switch>
+
+        <NotificationContainer/>
+        
       </div>
     );
   }
