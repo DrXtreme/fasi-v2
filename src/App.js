@@ -23,17 +23,53 @@ import checkboxHOC from "react-table/lib/hoc/selectTable";
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
+function cards4sendData(){
+  var form = new FormData();
+  form.set('getCards4runners',1);
+  var reso={};
+  fetch('http://localhost/',{
+    method: 'POST',
+    body: form
+  })
+    .then(res => res.json())
+    .then(data => {reso = data})
+    .then(() => {return reso});
+}
+
+function getData() {
+  if(typeof(cards4sendData()) !== 'undefined'){
+    const data = cards4sendData().map(item => {
+    // using chancejs to generate guid
+    // shortid is probably better but seems to have performance issues
+    // on codesandbox.io
+    const _id = item.id;
+    return {
+      _id,
+      ...item
+    };
+  });
+  return data;
+  }else{
+    return {};
+  }
+  
+}
+
 function getColumns(data) {
   const columns = [];
-  const sample = data[0];
-  Object.keys(sample).forEach(key => {
-    if (key !== "_id") {
-      columns.push({
-        accessor: key,
-        Header: key
-      });
-    }
-  });
+  var sample ;
+  if(typeof(data[0]) !== 'undefined'){
+    sample = data[0];
+    Object.keys(sample).forEach(key => {
+      if (key !== "_id") {
+        columns.push({
+          accessor: key,
+          Header: key
+        });
+      }
+    });
+  }
+  
   return columns;
 }
 
@@ -41,6 +77,7 @@ function getColumns(data) {
 class App extends React.Component {
   constructor(props, context) {
     super(props, context);
+    const data = getData();
     this.state = {
       customer: {
         data: [],
@@ -59,13 +96,14 @@ class App extends React.Component {
         loading: true
       },
       sendCard: {
-        cards4send: [],
+        cards4send: data,
         runners: [],
         pages: null,
         loading: true,
         selection: [],
         selectAll: false,
-        selectedRunner: null
+        selectedRunner: null,
+
     },
       show: true,
       cardRow: <tr></tr>,
@@ -89,6 +127,25 @@ class App extends React.Component {
     this.fetchCards4Send = this.fetchCards4Send.bind(this);
     // this.addIdToSelected = this.addIdToSelected.bind(this);
     // this.removeIdFromSelected = this.removeIdFromSelected.bind(this);
+    this.handleSelectRunnerChange = this.handleSelectRunnerChange.bind(this);
+  }
+
+  // getData() {
+  //   const data = this.state.card.data.map(item => {
+  //     // using chancejs to generate guid
+  //     // shortid is probably better but seems to have performance issues
+  //     // on codesandbox.io
+  //     const _id = chance.guid();
+  //     return {
+  //       _id,
+  //       ...item
+  //     };
+  //   });
+  //   return data;
+  // }
+
+  handleSelectRunnerChange(e){
+    this.setState({selectedRunner:e.target.value});
   }
 
   toggleSelection = (key, shift, row) => {
@@ -143,7 +200,7 @@ class App extends React.Component {
       const currentRecords = wrappedInstance.getResolvedState().sortedData;
       // we just push all the IDs onto the selection array
       currentRecords.forEach(item => {
-        selection.push(item._original.id);
+        selection.push(item._original._id);
       });
     }
     this.setState({ selectAll, selection });
@@ -196,7 +253,7 @@ class App extends React.Component {
       catch(error){
         NotificationManager.error("Can't Send Card","Something Went Wrong");
       }
-    })
+    });
   }
 
   sendCard2Runner(card_id,runner_id){
@@ -379,9 +436,9 @@ class App extends React.Component {
 
 
   render() {
-    if (this.state.toCustomers === true) {
-      return <Redirect to='/' />
-    }
+    // if (this.state.toCustomers === true) {
+    //   return <Redirect to='/' />
+    // }
     const pg_customer = () => { 
       const { data , loading} = this.state.customer;
       return( <div><ReactTable
@@ -681,7 +738,7 @@ class App extends React.Component {
           const data = cards4send;
           const { toggleSelection, toggleAll, isSelected, logSelection } = this;
           const { selectAll } = this.state.sendCard;
-          const { columns } = this.state;
+          // const { columns } = this.state;
           const checkboxProps = {
             selectAll,
             isSelected,
@@ -692,10 +749,10 @@ class App extends React.Component {
               // someone asked for an example of a background color change
               // here it is...
               if(typeof(r) !== 'undefined'){
-                const selected = this.isSelected(r.original.id);console.log(this.state.selection);
+                const selected = this.isSelected(r.original._id);
                   return {
                     style: {
-                      backgroundColor: selected ? "lightgreen" : "inherit"
+                      backgroundColor: selected ? "lightblue" : "inherit"
                       // color: selected ? 'white' : 'inherit',
                     }
                   };
@@ -704,8 +761,27 @@ class App extends React.Component {
               }
             }
           };
+          // () => this.fetchCards4Send;
+          const tbl_cards4send = (
+            <Table>
+              <tbody>
+                <thead>
+                  <tr><td>ID</td><td>Owner Name</td></tr>
+                </thead>
+                {console.log(cards4send)
+                  // cards4send.map((card,index) => {
+                  //   return(
+                  //     <tr><td>{card.id}</td><td>{card.owname}</td></tr>
+                  //   )
+                  // })
+                }
+              </tbody>
+              
+            </Table>
+          );
+          // this.state.selectedRunner = runners.id;
           const opt_runners = (
-            <select>
+            <select onChange={this.handleSelectRunnerChange} onLoad={this.handleSelectRunnerChange} autoFocus required>
               {
                 runners.map((runner,index) => (
                   <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
@@ -717,77 +793,36 @@ class App extends React.Component {
           return (
             <div>
               <h3>Send Cards</h3>
+              <h6>Sending Cards to : {this.state.selectedRunner}</h6>
+              {tbl_cards4send}
               <CheckboxTable
                 ref={r => (this.checkboxTable = r)}
                 onFetchData = {this.fetchCards4Send}
                 data={data}
-                columns={[
-                  {
-                    id: "checkbox",
-                    Cell:<span><input type="checkbox" /></span>
-                  },
-                  {
-                    Header: 'ID',
-                    accessor: 'id',
-                    Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
-                  },
-                  {
-                    Header: 'Owner Name',
-                    accessor: 'owname'
-                  }
-                ]}
+                columns={getColumns(data)}
+                // columns={[
+                //   {
+                //     Header: 'ID',
+                //     accessor: 'id',
+                //     Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                //   },
+                //   {
+                //     Header: 'Owner Name',
+                //     accessor: 'owname'
+                //   }
+                // ]}
                 defaultPageSize={10}
                 className="-striped -highlight"
                 {...checkboxProps}
               />
-              {/* <ReactTable
-              getTrProps={(state, rowInfo) => {
-                if (rowInfo && rowInfo.row) {
-                  return {
-                    onClick: (e) => {
-                      this.setState({
-                        selected: rowInfo.index
-                      })
-                    },
-                    style: {
-                      background: rowInfo.index === this.state.selected ? '#00afec' : 'white',
-                      color: rowInfo.index === this.state.selected ? 'white' : 'black'
-                    }
-                  }
-                }else{
-                  return {}
-                }
-              }}
-              columns={[
-                {
-                  id: "checkbox",
-                  Cell:<span><input type="checkbox" /></span>
-                },
-                {
-                  Header: 'ID',
-                  accessor: 'id',
-                  Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
-                },
-                {
-                  Header: 'Owner Name',
-                  accessor: 'owname'
-                }
-              ]}
-              data = {cards4send}
-              loading = {loading}
-              onFetchData = {this.fetchCards4Send}
-              defaultPageSize = {10}
-              minRows = {3}
-              className="-striped -highlight"
-              noDataText="No matching data !"
-              /> */}
+        
               <div>
               <Well bsSize="large">
                 <form onSubmit={this.sendCard2Runner}>
                     {
                       opt_runners
                     }
-                  <Button>Submit</Button>
+                  <Button className="btn btn-info">Submit</Button>
                 </form>
               </Well>
             </div>
@@ -867,9 +902,6 @@ class App extends React.Component {
             );
         }
 
-        
-
-        
 
     return (
       <div className="App">
