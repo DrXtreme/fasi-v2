@@ -25,10 +25,10 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-
+const url = 'http://localhost/';
 
 export function makeCardData() {
-    return fetch('http://localhost/?cardAccounts=1')
+    return fetch(url+'?cardAccounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => {
