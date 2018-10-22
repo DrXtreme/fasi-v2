@@ -306,11 +306,11 @@ class App extends React.Component {
   executeSendCard(id){
     if( typeof(this.state.selectedRunner)!== 'undefined'){
       try {
-        NotificationManager.warning("Sending Card "+id+" to Runner","Please Wait...");
+        NotificationManager.warning("إرسال البطاقة الى  "+id+" الساحب","أرجوا الإنتظار...");
         this.sendCard2Runner(id,this.state.selectedRunner);
       }
       catch(error){
-        NotificationManager.error("Can't Send Card","Something Went Wrong");
+        NotificationManager.error("ﻻ يمكن إرسال البطاقة","حدث خطأ ما");
       }
     }
   }
@@ -321,12 +321,12 @@ class App extends React.Component {
       console.log("hahahhaha");
       this.state.sendCard.selection.map((id,index) => {
       try {
-        NotificationManager.warning("Sending Card "+index+" to Runner","Please Wait...");
+        NotificationManager.warning("إرسال البطاقة الى  "+index+" الساحب","أرجوا الإنتظار...");
         this.sendCard2Runner(id,this.state.selectedRunner);
-        NotificationManager.success("Card Sent To Runner","Success");
+        NotificationManager.success("تم إرسال البطاقة","نجاح");
       }
       catch(error){
-        NotificationManager.error("Can't Send Card","Something Went Wrong");
+        NotificationManager.error("ﻻ يمكن إرسال البطاقة","حدث خطأ ما");
       }
       });
     }
@@ -350,10 +350,10 @@ class App extends React.Component {
       //   default: break;
       // }
       if(reso.toString().localeCompare("Success")===0){
-        NotificationManager.success('Card successfully sent to runner','Success');
+        NotificationManager.success('تم إرسال البطاقة الى الساحب','نجاح');
       }
       else{
-        NotificationManager.error('Failed to send card to runner','ERROR');
+        NotificationManager.error('فشل في إرسال البطاقة','خطأ');
       }
     });
   }
@@ -372,10 +372,10 @@ class App extends React.Component {
       return reso.text();
     }).then(resa => {
       if(resa.toString().localeCompare("Success")===0){
-        NotificationManager.success('Added New Runner','Success')
+        NotificationManager.success('تمت إضافة ساحب جديد','نجاح')
         }
         else{
-          NotificationManager.success('Failed to add runner','ERROR');
+          NotificationManager.success('فشل في إضافة ساحب جديد','خطأ');
         }
     });
   }
@@ -439,7 +439,7 @@ class App extends React.Component {
 
   handleAddCustomer(event){
     event.preventDefault();
-    NotificationManager.warning("Please wait...","Adding New Customer");
+    NotificationManager.warning("الرجاء الإنتظار...","إضافة حساب لزبون جديد");
     const data = new FormData(event.target);
     // NOTE: you access FormData fields with `data.get(fieldName)`   
     data.set('addCustomer', 1);
@@ -456,14 +456,14 @@ class App extends React.Component {
       //   default: break;
       // }
       if(resa.toString().localeCompare("SuccessMore Success")===0){
-          NotificationManager.success("Added New Customer","Success");
+          NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
           // window.location='/customers';
           // return(<Redirect to='/customers'/>);
           // this.setState({toCustomers:true});
           this.props.history.push('/customers');
         }
         else{
-          NotificationManager.error("Can't Add Customer!","Something went wrong");
+          NotificationManager.error("لا يمكن إضافة الزبون","خطأ");
         }
     });
   }
@@ -520,25 +520,25 @@ class App extends React.Component {
       return( <div><ReactTable
       columns={[
         {
-          Header: 'ID',
+          Header: 'الإشاري',
           accessor: 'id',
           Cell: props => <span className='number'><Link to={`/customer/${props.value}`}>{props.value}</Link></span>
         },
         {
-          Header: 'Name',
+          Header: 'الإسم',
           accessor: 'name' // String-based value accessors!
         }, {
-          Header: 'Cards',
+          Header: 'البطاقات',
           accessor: 'cards',
           id: 'cards',
           Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
         }, {
           id: 'phone', // Required because our accessor is not a string
-          Header: 'Phone',
+          Header: 'الهاتف',
           accessor: 'phone',
           Cell: props => <span className='number'>{props.value}</span> // Custom cell components!
         }, {
-          Header: 'CardsID',
+          Header: 'اشاري البطاقة',
           accessor: 'cards_id',
           id: 'cards_id',
           Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
@@ -549,12 +549,12 @@ class App extends React.Component {
       //pages={pages} // Display the total number of pages
       loading={loading} // Display the loading overlay when we need it
       onFetchData={this.fetchCustomerData} // Request new data when things change
-      noDataText="No matching data !"
+      noDataText="ﻻ توجد بيانات مطابقة !"
       filterable
       minRows={3}
       defaultPageSize={10}
       />
-      <Link to="/addCustomer" className="btn btn-info">ADD</Link>
+      <Link to="/addCustomer" className="btn btn-info">إضافة</Link>
       </div>
       )};
 
@@ -563,52 +563,52 @@ class App extends React.Component {
         return( <ReactTable
         columns={[
           {
-            Header: 'ID',
+            Header: 'الإشاري',
             accessor: 'id',
             Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
           },
           {
-            Header: 'Name',
+            Header: 'الإسم',
             accessor: 'owname' // String-based value accessors!
           },
           {
-            Header: 'Number',
+            Header: 'الرقم',
             accessor: 'number',
             Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
           },
           {
-            Header: 'Type',
+            Header: 'النوع',
             accessor: 'type',
             id: 'type'
           },
           {
             id: 'exp', // Required because our accessor is not a string
-            Header: 'exp',
+            Header: 'الصلاحية',
             accessor: 'exp',
             Cell: props => <span className='number'>{props.value}</span> // Custom cell components!
           },
           {
-            Header: 'State',
+            Header: 'الحالة',
             accessor: 'state',
             id: 'state'
           },
           {
-            Header: 'Bank',
+            Header: 'المصرف',
             accessor: 'bank',
             id: 'bank'
           },
           {
-            Header: 'Credit',
+            Header: 'الرصيد',
             accessor: 'credit',
             id: 'credit'
           },
           {
-            Header: 'Drawn',
+            Header: 'المسحوب',
             accessor: 'drawn',
             id: 'drawn'
           },
           {
-            Header: 'Avail',
+            Header: 'المتبقي',
             accessor: 'avail',
             id: 'avail'
           }
@@ -617,7 +617,7 @@ class App extends React.Component {
         //pages={pages} // Display the total number of pages
         loading={loading} // Display the loading overlay when we need it
         onFetchData={this.fetchCardData} // Request new data when things change
-        noDataText="No matching data !"
+        noDataText="لا توجد بيانات مطابقة !"
         filterable
         minRows={3}
         defaultPageSize={10}
@@ -629,23 +629,23 @@ class App extends React.Component {
           return( <ReactTable
           columns={[
             {
-              Header: 'ID',
+              Header: 'الإشاري',
               accessor: 'id'
             },
             {
-              Header: 'Card ID',
+              Header: 'إشاري البطاقة',
               accessor: 'card_id' // String-based value accessors!
             }, 
             {
-              Header: 'Runner ID',
+              Header: 'إشاري الساحب',
               accessor: 'runner_id'
             },
             {
-              Header: 'Valid',
+              Header: 'فاعل؟',
               accessor: 'valid'
             },
             {
-              Header: 'Created',
+              Header: 'تاريخ الإضافة',
               accessor: 'created'
             }
             ]}
@@ -653,7 +653,7 @@ class App extends React.Component {
           //pages={pages} // Display the total number of pages
           loading={loading} // Display the loading overlay when we need it
           onFetchData={this.fetchQueueData} // Request new data when things change
-          noDataText="No matching data !"
+          noDataText="ﻻ توجد بيانات مطابقة !"
           filterable
           minRows={3}
           defaultPageSize={10}
@@ -662,7 +662,7 @@ class App extends React.Component {
 
         const alert404 = ( () => {
           return(
-            <Alert bsStyle="danger"><h4>Wrong Link?</h4><br/>its not your fault.</Alert>
+            <Alert bsStyle="danger"><h4>رابط خاطئ؟</h4><br/>هذا ليس خطأك.</Alert>
           );
         });
 
@@ -670,25 +670,25 @@ class App extends React.Component {
           return(
           <form onSubmit={this.handleAddCustomer}>
             <label>
-              New Account:
+              حساب جديد:
             </label>
             <br/>
             <Table ref={table => {this.addTable=table;}} responsive>
               <tbody>
-                <tr><td>Name:</td><td><input type="text" name="name" title="Name of account holder" required/></td></tr>
-                <tr><td>Phone</td><td><input type="number" name="phone" title="Phone number of account holder" required/></td></tr>
+                <tr><td>Name:</td><td><input type="text" name="name" title="إسم صاحب الحساب" required/></td></tr>
+                <tr><td>Phone</td><td><input type="number" name="phone" title="رقم هاتف صاحب الحساب" required/></td></tr>
                 {this.state.cardRow}
-                <tr><td><Button bsStyle="success" ref={button => {this.target = button;}} onClick={this.addCardRow} >+ Add Card...</Button></td></tr>
+                <tr><td><Button bsStyle="success" ref={button => {this.target = button;}} onClick={this.addCardRow} >+ أضف بطاقة...</Button></td></tr>
                 <tr><td></td><td>
-                <Button ref={button => {this.submitTarget=button;}} type="submit">Premium Submit</Button>
+                <Button ref={button => {this.submitTarget=button;}} type="submit">قدّم</Button>
                 </td></tr>
               </tbody>
             </Table>
             <Overlay {...sharedProps} placement="bottom">
-              <Tooltip id="overload-bottom" onClick={this.handleToggle}>Unlimited cards!</Tooltip>
+              <Tooltip id="overload-bottom" onClick={this.handleToggle}>ﻻ توجد حدود لإضافة البطاقات!</Tooltip>
             </Overlay>
             <Overlay {...submitProps} placement="left">
-              <Tooltip id="overload-left" onClick={this.handleToggle}>Whenever you're ready!</Tooltip>
+              <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip>
             </Overlay>
           </form>
           );
@@ -727,11 +727,11 @@ class App extends React.Component {
               return(
                 <Table ref={table => {this.addTable=table;}} key={index} responsive>
                   <tbody>
-                    <tr><td>ID:</td><td>{customer.id}</td></tr>
-                    <tr><td>Name:</td><td>{customer.name}</td></tr>
-                    <tr><td>Cards:</td><td>{customer.cards}</td></tr>
-                    <tr><td>Phone:</td><td>{customer.phone}</td></tr>
-                    <tr><td>Card ID:</td><td>{customer.cards_id}</td></tr>
+                    <tr><td>الإشاري:</td><td>{customer.id}</td></tr>
+                    <tr><td>الإسم:</td><td>{customer.name}</td></tr>
+                    <tr><td>البطاقات:</td><td>{customer.cards}</td></tr>
+                    <tr><td>الهاتف:</td><td>{customer.phone}</td></tr>
+                    <tr><td>إشاري البطاقة:</td><td>{customer.cards_id}</td></tr>
                   </tbody>
                 </Table>
               )})
@@ -748,7 +748,7 @@ class App extends React.Component {
             <ReactTable 
               className="-striped -highlight"
               onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
-              noDataText="No matching data !"
+              noDataText="ﻻ توجد بيانات مطابقة !"
               loading = {loading}
               defaultPageSize = {1}
               minRows = {1}
@@ -756,13 +756,13 @@ class App extends React.Component {
                 [
                   {
                     id : 'id',
-                    Header : 'ID',
+                    Header : 'الإشاري',
                     accessor : 'id',
                     Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
                   },
                   {
                     id : 'owname',
-                    Header : 'Owner Name',
+                    Header : 'إسم صاحب البطاقة',
                     accessor : 'owname'
                   }
                 ]
@@ -779,17 +779,17 @@ class App extends React.Component {
           const cards = data.map((card,index) => (
             <Table key={index}>
               <tbody>
-                <tr><td>ID:</td><td>{card.id}</td></tr>
-                <tr><td>Name:</td><td>{card.owname}</td></tr>
-                <tr><td>Type:</td><td>{card.type}</td></tr>
-                <tr><td>Bank:</td><td>{card.bank}</td></tr>
-                <tr><td>EXP:</td><td>{card.exp}</td></tr>
-                <tr><td>State:</td><td>{card.state}</td></tr>
-                <tr><td>Whereis:</td><td>{card.whereis}</td></tr>
-                <tr><td>Credit:</td><td>{card.credit}</td></tr>
-                <tr><td>Drawn:</td><td>{card.drawn}</td></tr>
-                <tr><td>Number:</td><td>{card.number}</td></tr>
-                <tr><td>CODE:</td><td>{1234}</td></tr>
+                <tr><td>الإشاري:</td><td>{card.id}</td></tr>
+                <tr><td>الإسم:</td><td>{card.owname}</td></tr>
+                <tr><td>النوع:</td><td>{card.type}</td></tr>
+                <tr><td>المصرف:</td><td>{card.bank}</td></tr>
+                <tr><td>الصلاحية:</td><td>{card.exp}</td></tr>
+                <tr><td>الحالة:</td><td>{card.state}</td></tr>
+                <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
+                <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
+                <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
+                <tr><td>الرقم:</td><td>{card.number}</td></tr>
+                <tr><td>الكود:</td><td>{1234}</td></tr>
               </tbody>
             </Table>
           ));
@@ -803,13 +803,13 @@ class App extends React.Component {
         const home_header = () => (
           <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to Fasi currency services</h1>
+          <h1 className="App-title">مرحبا بك في فاسي لخدمات العمله</h1>
           </header>
         );
 
         const home_message = () => (
           <p className="App-intro">
-            Soon coming to mobile platforms.
+            قريبا على منصات الهةاتف الذكية.
           </p>
         );
 
@@ -818,28 +818,28 @@ class App extends React.Component {
           return( <div><ReactTable
           columns={[
             {
-              Header : 'ID',
+              Header : 'الإشاري',
               accessor : 'id',
               Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
             },
             {
               id : 'name',
-              Header : 'Name',
+              Header : 'الإسم',
               accessor : 'name'
             },
             {
               id : 'phone',
-              Header : 'phone',
+              Header : 'الهاتف',
               accessor : 'phone'
             },
             {
               id : 'fee',
-              Header : 'Fee',
+              Header : 'العمولة',
               accessor : 'fee'
             },
             {
               id : 'credit',
-              Header : 'Credit',
+              Header : 'الرصيد',
               accessor : 'credit'
             }
             ]}
@@ -848,7 +848,7 @@ class App extends React.Component {
           //pages={pages} // Display the total number of pages
           loading={loading} // Display the loading overlay when we need it
           onFetchData={this.fetchRunnerData} // Request new data when things change
-          noDataText="No matching data !"
+          noDataText="ﻻ توجد بيانات مطابقة !"
           filterable
           minRows={3}
           defaultPageSize={10}
@@ -910,7 +910,7 @@ class App extends React.Component {
           const tbl_cards4send = (
             <Table>
               <thead>
-                  <tr><td>ID</td><td>Owner Name</td><td>Card Number</td><td>|</td><td>Runner</td><td>Send</td></tr>
+                  <tr><td>الإشاري</td><td>إسم صاحبها</td><td>رقم البطاقة</td><td>|</td><td>الساحب</td><td>أرسل</td></tr>
               </thead>
               <tbody>
                 {
@@ -921,7 +921,7 @@ class App extends React.Component {
                         <select 
                         onChange={this.handleSelectRunnerChange} 
                         required
-                        placeholder="Runner"
+                        placeholder="الساحب"
                         ref={ref => {
                           this._select = ref
                         }}
@@ -933,7 +933,7 @@ class App extends React.Component {
                               <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
                             ))
                           }
-                        </select></td><td><Button className="btn btn-link" onClick={() => this.executeSendCard(card.id)}>Send</Button></td></tr>
+                        </select></td><td><Button className="btn btn-link" onClick={() => this.executeSendCard(card.id)}>أرسل</Button></td></tr>
                     )
                   })
                 }
@@ -955,7 +955,7 @@ class App extends React.Component {
           return (
             <div>
               <Well bsSize="small">
-                <h3>Send Cards</h3>
+                <h3>إرسال بطاقات</h3>
               </Well>
               {tbl_cards4send}
               {/* <CheckboxTable
@@ -1005,18 +1005,18 @@ class App extends React.Component {
                   return(
                     <Table key={"runner"+index}>
                       <tbody>
-                        <tr><td>ID</td><td>{runner.id}</td></tr>
-                        <tr><td>Name</td><td>{runner.name}</td></tr>
-                        <tr><td>Phone</td><td>{runner.phone}</td></tr>
-                        <tr><td>Fee</td><td>{runner.fee}</td></tr>
-                        <tr><td>Credit</td><td>{runner.credit}</td></tr>
-                        <tr><td>Drawn</td><td>{runner.drawn}</td></tr>
-                        <tr><td>Diposited</td><td>{runner.diposited}</td></tr>
-                        <tr><td>Cards With</td><td></td></tr>
-                        <tr><td>Cards Pending from</td><td></td></tr>
-                        <tr><td>Cards Pending to</td><td></td></tr>
-                        <tr><td>Date Created</td><td>{runner.created}</td></tr>
-                        <tr><td><Button onClick={gotoSendCard} className="btn btn-info">Send Card</Button></td><td></td></tr>
+                        <tr><td>الإشاري</td><td>{runner.id}</td></tr>
+                        <tr><td>الإسم</td><td>{runner.name}</td></tr>
+                        <tr><td>الرقم</td><td>{runner.phone}</td></tr>
+                        <tr><td>العمولة</td><td>{runner.fee}</td></tr>
+                        <tr><td>الرصيد</td><td>{runner.credit}</td></tr>
+                        <tr><td>المسحوب</td><td>{runner.drawn}</td></tr>
+                        <tr><td>المودع</td><td>{runner.diposited}</td></tr>
+                        <tr><td>بطاقات مع</td><td></td></tr>
+                        <tr><td>بطاقات فالطريق منه</td><td></td></tr>
+                        <tr><td>بطاقات فالطريق اليه</td><td></td></tr>
+                        <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
+                        <tr><td><Button onClick={gotoSendCard} className="btn btn-info">إرسال بطاقات</Button></td><td></td></tr>
                       </tbody>
                     </Table>
                   )
@@ -1031,10 +1031,10 @@ class App extends React.Component {
             <div>
               <Table>
                 <thead>
-                  <tr><td>User</td><td>Action</td></tr>
+                  <tr><td>المستخدم</td><td>الإمر</td></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Admin</td><td><a>Change Password</a></td></tr>
+                  <tr><td>Admin</td><td><a>تغيير كلمة المرور</a></td></tr>
                 </tbody>
               </Table>
             </div>
@@ -1045,21 +1045,21 @@ class App extends React.Component {
           return(
             <form onSubmit={this.handleAddRunner}>
               <label>
-                New Runner:
+                ساحب جديد:
               </label>
               <br/>
               <Table ref={table => {this.addTable=table;}} responsive>
                 <tbody>
-                  <tr><td>Name:</td><td><input type="text" name="name" title="Name of runner"/></td></tr>
-                  <tr><td>Phone</td><td><input type="text" name="phone" title="Phone number of runner"/></td></tr>
-                  <tr><td>Fee</td><td><input type="text" name="fee" title="Fee per card in USD"/></td></tr>
+                  <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم الساحب"/></td></tr>
+                  <tr><td>رقم الهاتف</td><td><input type="text" name="phone" title="رقم هاتف الساحب"/></td></tr>
+                  <tr><td>العموله</td><td><input type="text" name="fee" title="عمولة الساحب للبطاقة الواحدة"/></td></tr>
                   <tr><td></td><td>
-                  <Button ref={button => {this.submitTarget=button;}} type="submit" className="btn btn-info">Submit</Button>
+                  <Button ref={button => {this.submitTarget=button;}} type="submit" className="btn btn-info">قدّم</Button>
                   </td></tr>
                 </tbody>
               </Table>
               <Overlay {...submitProps} placement="left">
-                <Tooltip id="overload-left" onClick={this.handleToggle}>Whenever you're ready!</Tooltip>
+                <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip>
               </Overlay>
             </form>
             );
@@ -1071,7 +1071,7 @@ class App extends React.Component {
         <Navbar inverse collapseOnSelect>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to="/fasi">FASI Currency</Link>
+              <Link to="/fasi">فاسي لخدمات العمله</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
@@ -1079,41 +1079,41 @@ class App extends React.Component {
             <Nav>
               <LinkContainer to="/customers">
                 <NavItem eventKey={1}>
-                  Customers
+                  الزبائن
                 </NavItem>
               </LinkContainer>
               <LinkContainer to="/runners">
                 <NavItem eventKey={2}>
-                  Runners
+                  الساحبون
                 </NavItem>
               </LinkContainer>
-              <NavDropdown eventKey={3} title="More" id="basic-nav-dropdown">
+              <NavDropdown eventKey={3} title="المزيد" id="basic-nav-dropdown">
                 <LinkContainer to="/cards">
-                  <MenuItem eventKey={3.1}title="Shows Cards Table">Cards</MenuItem>
+                  <MenuItem eventKey={3.1}title="يعرض بيانات البطاقات">البطاقات</MenuItem>
                 </LinkContainer>
                 <LinkContainer to="/sendCard">
-                  <MenuItem eventKey={3.1}title="Shows Queue Table">Send Cards</MenuItem>
+                  <MenuItem eventKey={3.1}title="يعرض قائمة إرسال البطاقات">إرسال البطاقات</MenuItem>
                 </LinkContainer>
                 <LinkContainer to="/queue">
-                  <MenuItem eventKey={3.1}title="Shows Queue Table">Queue</MenuItem>
+                  <MenuItem eventKey={3.1}title="يعرض البطاقات التي فالإنتظار">بطاقات فالإنتظار</MenuItem>
                 </LinkContainer>
                 <LinkContainer to="/transactions">
-                  <MenuItem eventKey={3.1}title="Shows Transaction Table">Transactions</MenuItem>
+                  <MenuItem eventKey={3.1}title="يعرف جميع المعاملات">المعاملات</MenuItem>
                 </LinkContainer>
-                <MenuItem eventKey={3.2}>Statistics</MenuItem>
-                <MenuItem eventKey={3.3}>Settings</MenuItem>
+                <MenuItem eventKey={3.2}>التقارير</MenuItem>
+                <MenuItem eventKey={3.3}>الإعدادات</MenuItem>
                 <MenuItem divider />
                 <LinkContainer to="/users">
-                <MenuItem eventKey={3.3} title="Shows Users Info">Users</MenuItem>
+                <MenuItem eventKey={3.3} title="يعرض بيانات المستخدمين">المستخدمون</MenuItem>
                 </LinkContainer>
               </NavDropdown>
             </Nav>
             <Nav pullRight>
               <NavItem eventKey={1}>
-                Help
+                المساعدة
               </NavItem>
               <NavItem eventKey={2}>
-                About
+                حول
               </NavItem>
             </Nav>
           </Navbar.Collapse>

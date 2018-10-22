@@ -7,9 +7,9 @@ class Welcome extends Component {
  return (
  <div className="row " id="Body">
  <div className="medium-12 columns">
- <h2 id="welcomeText">Make people fall in love with your ideas</h2>
- <Button href="/login" className="button">Login</Button>
- <Button href="/signup" className="button success">Signup</Button>
+ <h2 id="welcomeText">إجعل الناس تقع في حب أفكارك</h2>
+ <Button href="/login" className="button">الدخول</Button>
+ <Button href="/signup" className="button success">التسجيل</Button>
  </div>
  </div>
 );
