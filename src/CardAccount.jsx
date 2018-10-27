@@ -14,7 +14,9 @@ const newCardAccount = (jsonObj) => {
         bank: jsonObj.bank,
         credit: jsonObj.credit,
         drawn: jsonObj.drawn,
-        avail: jsonObj.avail
+        avail: jsonObj.avail,
+        card_code: jsonObj.card_code,
+        card_number: jsonObj.card_number
     };
 };
 
@@ -25,7 +27,7 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-const url = 'http://localhost/';
+const url = 'http://admin.fasicurrency.com/sbuild/';
 
 export function makeCardData() {
     return fetch(url+'?cardAccounts=1')

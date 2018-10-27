@@ -8,19 +8,54 @@ import 'whatwg-fetch';
 import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
 import { makeRunnerData } from './RunnerAccount';
-import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert } from 'react-bootstrap';
+import {PostData} from './PostData';
+import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert,Modal } from 'react-bootstrap';
 import { Link, Route,Switch,Redirect,withRouter} from 'react-router-dom';
 import {done} from './done';
 import Runner from './Runner';
 import Welcome from './welcome';
 import Login from './Login';
+import Logout from './Logout';
 import { LinkContainer } from 'react-router-bootstrap';
 import 'react-notifications/lib/notifications.css';
 import {NotificationContainer, NotificationManager} from 'react-notifications';
 import checkboxHOC from "react-table/lib/hoc/selectTable";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-const url = 'http://localhost/';
+const url = 'http://admin.fasicurrency.com/sbuild/';
+
+let rand = ()=> (Math.floor(Math.random() * 20) - 10);
+
+            const modalStyle = {
+              position: 'fixed',
+              zIndex: 1040,
+              top: 0, bottom: 0, left: 0, right: 0
+            };
+            
+            const backdropStyle = {
+              ...modalStyle,
+              zIndex: 'auto',
+              backgroundColor: '#000',
+              opacity: 0.6
+            };
+            
+            const dialogStyle = function() {
+              // we use some psuedo random coords so nested modals
+              // don't sit right on top of each other.
+              let top = -50;
+              let left = 50;
+            
+              return {
+                position: 'absolute',
+                width: 400,
+                top: top + '%', left: left + '%',
+                transform: `translate(-${top}%, -${left}%)`,
+                border: '1px solid #e5e5e5',
+                backgroundColor: 'white',
+                boxShadow: '0 5px 15px rgba(0,0,0,.5)',
+                padding: 20
+              };
+            };
 // const CheckboxTable = checkboxHOC(ReactTable);
 
 // function cards4sendData(){
@@ -114,7 +149,9 @@ class App extends React.Component {
       cardRow: <tr></tr>,
       selection: [],
       selectAll: false,
-      selectedRunner: null
+      selectedRunner: '',
+      showModal: false,
+      submitIsDisabled: false
     };
     this.fetchCustomerData = this.fetchCustomerData.bind(this);
     this.fetchCardData = this.fetchCardData.bind(this);
@@ -138,10 +175,50 @@ class App extends React.Component {
     this.executeSendCard = this.executeSendCard.bind(this);
     this.handleCheckbox = this.handleCheckbox.bind(this);
     this.fetchQueueData = this.fetchQueueData.bind(this);
+    this.open = this.open.bind(this);
+    this.close = this.close.bind(this);
+    this.handleAddCard = this.handleAddCard.bind(this);
   }
 
+  handleAddCard(e){
+    e.preventDefault();
+    ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
+    // this.setState({submitIsDisabled:true});
+    // e.currentTarget.classList.add("disabled");
+    NotificationManager.warning("تتم إضافة البطاقة","الرجاء الإنتظار");
+    const form = new FormData(e.target);
+    for (var [key, value] of form.entries()) { 
+      console.log(key, value);
+    }
+    form.set('addCard',1);
+    fetch(url,{
+      method:'POST',
+      body:form
+    })
+    .then(res => res.text())
+    .then(textRes => {
+      if(textRes === "Success"){
+        this.close();
+        NotificationManager.success("تمت إضافة البطاقة بنجاح","نجاح");
+        // this.setState({submitIsDisabled:false});
+      }else{
+        this.close();
+        NotificationManager.error("ﻻ يمكن إضافة بطاقة","خطأ");
+        // this.setState({submitIsDisabled:false});
+      }
+    })
+  }
+
+  close(){
+    this.setState({showModal: false});
+  }
+
+  open(){
+    this.setState({showModal: true});
+  }
+  
   fetchQueueData(){
-    this.setState({queue:{loading:true}})
+    () => this.setState({queue:{loading:true}})
     var form = new FormData();
     form.set('queues',1);
     fetch(url,{
@@ -304,10 +381,13 @@ class App extends React.Component {
   }
 
   executeSendCard(id){
-    if( typeof(this.state.selectedRunner)!== 'undefined'){
+    let selectedRunner = ReactDOM.findDOMNode(this._select).value;
+    console.log(selectedRunner);
+    // if( typeof(this.state.selectedRunner)!== 'undefined'){
+      if (selectedRunner !== null){
       try {
         NotificationManager.warning("إرسال البطاقة الى  "+id+" الساحب","أرجوا الإنتظار...");
-        this.sendCard2Runner(id,this.state.selectedRunner);
+        this.sendCard2Runner(id,selectedRunner);
       }
       catch(error){
         NotificationManager.error("ﻻ يمكن إرسال البطاقة","حدث خطأ ما");
@@ -375,7 +455,7 @@ class App extends React.Component {
         NotificationManager.success('تمت إضافة ساحب جديد','نجاح')
         }
         else{
-          NotificationManager.success('فشل في إضافة ساحب جديد','خطأ');
+          NotificationManager.error('فشل في إضافة ساحب جديد','خطأ');
         }
     });
   }
@@ -457,10 +537,10 @@ class App extends React.Component {
       // }
       if(resa.toString().localeCompare("SuccessMore Success")===0){
           NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
-          // window.location='/customers';
+          window.location.replace('/build/admin/customers');
           // return(<Redirect to='/customers'/>);
           // this.setState({toCustomers:true});
-          this.props.history.push('/customers');
+          // this.props.history.push('/customers');
         }
         else{
           NotificationManager.error("لا يمكن إضافة الزبون","خطأ");
@@ -472,10 +552,14 @@ class App extends React.Component {
     return `${ pre }_${ new Date().getTime() }`;
   }
   
-  addCardRow(){
-    let row = <tr key={this.generateKey("card_row")}><td><input type="text" name="owname" placeholder="Owner Name"/></td><td><input type="text" name="number" placeholder="Card Number"/></td><td><input type="text" name="type" placeholder="Type"/></td><td><input type="text" name="bank" placeholder="Bank"/></td><td><input type="text" name="exp" placeholder="EXP"/></td><td><input type="text" name="state" placeholder="State"/></td><td><input type="text" name="credit" placeholder="Credit"/></td><td><input type="text" name="drawn" placeholder="Drawn"/></td></tr>;
+  addCardRow(e){
+    e.preventDefault();
+    let row = <tr key={this.generateKey("card_row")}><td><input type="text" name="owname" placeholder="إسم مالك البطاقة" required/></td><td><input type="text" name="card_number" placeholder="رقم البطاقة" required/></td><td><input name="card_code" type="text" placeholder="كود البطاقة" required/></td><td><input type="text" name="type" placeholder="النوع" required/></td><td><input type="text" name="bank" placeholder="المصرف" required/></td><td><input type="text" name="exp" placeholder="الصلاحية" required/></td><td><input type="text" name="state" placeholder="الحاله" required/></td><td><input type="text" name="credit" placeholder="الرصيد" required/></td><td><input type="text" name="drawn" placeholder="المسحوب منه" required/></td></tr>;
     
     this.setState({cardRow:[this.state.cardRow,row]}) ;
+    ReactDOM.findDOMNode(this.target).setAttribute("disabled", "disabled");
+    // this.refs.target.setAttribute("disabled", "disabled");
+    // this.target.disabled=true;
   }
 
   handleToggle() {
@@ -508,13 +592,15 @@ class App extends React.Component {
       });
   }
 
- 
-
+  componentDidMount(){
+    {this.fetchCustomerData()};//fetchCardData
+    {this.fetchRunnerData()};//fetchRunnerDatafetchCardData
+    {this.fetchCardData()};//fetchRunnerDatafetchCardData
+  }
 
   render() {
-    // if (this.state.toCustomers === true) {
-    //   return <Redirect to='/' />
-    // }
+    
+    
     const pg_customer = () => { 
       const { data , loading} = this.state.customer;
       return( <div><ReactTable
@@ -522,7 +608,7 @@ class App extends React.Component {
         {
           Header: 'الإشاري',
           accessor: 'id',
-          Cell: props => <span className='number'><Link to={`/customer/${props.value}`}>{props.value}</Link></span>
+          Cell: props => <span className='number'><Link to={`/build/admin/customer/${props.value}`}>{props.value}</Link></span>
         },
         {
           Header: 'الإسم',
@@ -541,7 +627,7 @@ class App extends React.Component {
           Header: 'اشاري البطاقة',
           accessor: 'cards_id',
           id: 'cards_id',
-          Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
+          Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
         }
         ]}
       className="-striped -highlight"
@@ -550,11 +636,16 @@ class App extends React.Component {
       loading={loading} // Display the loading overlay when we need it
       onFetchData={this.fetchCustomerData} // Request new data when things change
       noDataText="ﻻ توجد بيانات مطابقة !"
+      loadingText="جاري التحميل"
+      nextText="التالي"
+      previousText="السابق"
+      rowsText="صفوف"
+      pageText="صفحة"
       filterable
       minRows={3}
       defaultPageSize={10}
       />
-      <Link to="/addCustomer" className="btn btn-info">إضافة</Link>
+      <Link to="/build/admin/addCustomer" className="btn btn-info">إضافة</Link>
       </div>
       )};
 
@@ -565,7 +656,7 @@ class App extends React.Component {
           {
             Header: 'الإشاري',
             accessor: 'id',
-            Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+            Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
           },
           {
             Header: 'الإسم',
@@ -573,8 +664,11 @@ class App extends React.Component {
           },
           {
             Header: 'الرقم',
-            accessor: 'number',
-            Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+            accessor: 'card_number'
+          },
+          {
+            Header: 'الكود',
+            accessor: 'card_code'
           },
           {
             Header: 'النوع',
@@ -617,7 +711,12 @@ class App extends React.Component {
         //pages={pages} // Display the total number of pages
         loading={loading} // Display the loading overlay when we need it
         onFetchData={this.fetchCardData} // Request new data when things change
-        noDataText="لا توجد بيانات مطابقة !"
+        noDataText="ﻻ توجد بيانات مطابقة !"
+        loadingText="جاري التحميل"
+        nextText="التالي"
+        previousText="السابق"
+        rowsText="صفوف"
+        pageText="صفحة"
         filterable
         minRows={3}
         defaultPageSize={10}
@@ -626,39 +725,49 @@ class App extends React.Component {
 
         const pg_queue = () => {
           const { data , loading} = this.state.queue;
-          return( <ReactTable
-          columns={[
-            {
-              Header: 'الإشاري',
-              accessor: 'id'
-            },
-            {
-              Header: 'إشاري البطاقة',
-              accessor: 'card_id' // String-based value accessors!
-            }, 
-            {
-              Header: 'إشاري الساحب',
-              accessor: 'runner_id'
-            },
-            {
-              Header: 'فاعل؟',
-              accessor: 'valid'
-            },
-            {
-              Header: 'تاريخ الإضافة',
-              accessor: 'created'
-            }
-            ]}
-          data={data}
-          //pages={pages} // Display the total number of pages
-          loading={loading} // Display the loading overlay when we need it
-          onFetchData={this.fetchQueueData} // Request new data when things change
-          noDataText="ﻻ توجد بيانات مطابقة !"
-          filterable
-          minRows={3}
-          defaultPageSize={10}
-          className="-striped -highlight"
-          />)};
+          return( <div>
+            <Well bsSize="small">
+              <h3>بطاقات فالإنتظار</h3>
+            </Well>
+            <ReactTable
+              columns={[
+                {
+                  Header: 'الإشاري',
+                  accessor: 'id'
+                },
+                {
+                  Header: 'إشاري البطاقة',
+                  accessor: 'card_id' 
+                }, 
+                {
+                  Header: 'إشاري الساحب',
+                  accessor: 'runner_id'
+                },
+                {
+                  Header: 'فاعل؟',
+                  accessor: 'valid',
+                  Cell: props => <span>{props.value=1?"نعم":"ﻻ"}</span>
+                },
+                {
+                  Header: 'تاريخ الإضافة',
+                  accessor: 'created'
+                }
+                ]}
+              data={data}
+              //pages={pages} // Display the total number of pages
+              loading={loading} // Display the loading overlay when we need it
+              onFetchData={this.fetchQueueData} // Request new data when things change
+              noDataText="ﻻ توجد بيانات مطابقة !"
+              loadingText="جاري التحميل"
+              nextText="التالي"
+              previousText="السابق"
+              rowsText="صفوف"
+              pageText="صفحة"
+              filterable
+              minRows={3}
+              defaultPageSize={10}
+              className="-striped -highlight"
+              /></div>)};
 
         const alert404 = ( () => {
           return(
@@ -675,8 +784,8 @@ class App extends React.Component {
             <br/>
             <Table ref={table => {this.addTable=table;}} responsive>
               <tbody>
-                <tr><td>Name:</td><td><input type="text" name="name" title="إسم صاحب الحساب" required/></td></tr>
-                <tr><td>Phone</td><td><input type="number" name="phone" title="رقم هاتف صاحب الحساب" required/></td></tr>
+                <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم صاحب الحساب" required/></td></tr>
+                <tr><td>رقم الهاتف</td><td><input type="number" name="phone" title="رقم هاتف صاحب الحساب" required/></td></tr>
                 {this.state.cardRow}
                 <tr><td><Button bsStyle="success" ref={button => {this.target = button;}} onClick={this.addCardRow} >+ أضف بطاقة...</Button></td></tr>
                 <tr><td></td><td>
@@ -709,6 +818,7 @@ class App extends React.Component {
         const Customer = ({ match }) => {
           const { data , data2 , loading} = this.state.customer;
           let id = match.params.id;
+          this.getCustomerData(id)
           // if(typeof(data) === 'undefined'){
             // return (<p></p>);
           // }
@@ -721,8 +831,8 @@ class App extends React.Component {
             // cusData = data;
           // }
           try{
-          var customer;
-          // if(typeof(data[0]) !== 'undefined'){
+            var customer;
+            // if(typeof(data[0]) !== 'undefined'){
             customer = data.map((customer,index) => {
               return(
                 <Table ref={table => {this.addTable=table;}} key={index} responsive>
@@ -732,25 +842,32 @@ class App extends React.Component {
                     <tr><td>البطاقات:</td><td>{customer.cards}</td></tr>
                     <tr><td>الهاتف:</td><td>{customer.phone}</td></tr>
                     <tr><td>إشاري البطاقة:</td><td>{customer.cards_id}</td></tr>
+                    <tr><td>تاريخ التسجيل :</td><td>{customer.created}</td></tr>
                   </tbody>
                 </Table>
               )})
+            
           }
           catch(error){
             console.error(error);
           }
+          
           finally{
           return(
           <div>
-            {customer}
             <h3>ID: {match.params.id}</h3>
-
+            {customer}
             <ReactTable 
               className="-striped -highlight"
               onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
               noDataText="ﻻ توجد بيانات مطابقة !"
+              loadingText="جاري التحميل"
+              nextText="التالي"
+              previousText="السابق"
+              rowsText="صفوف"
+              pageText="صفحة"
               loading = {loading}
-              defaultPageSize = {1}
+              defaultPageSize = {10}
               minRows = {1}
               columns = {
                 [
@@ -758,7 +875,7 @@ class App extends React.Component {
                     id : 'id',
                     Header : 'الإشاري',
                     accessor : 'id',
-                    Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                    Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
                   },
                   {
                     id : 'owname',
@@ -768,6 +885,35 @@ class App extends React.Component {
                 ]
               }
               data = {data2}/>
+              <Button className="btn btn-link" onClick={this.open}>إضافة بطاقة</Button>
+              <Modal
+                aria-labelledby='modal-label'
+                style={modalStyle}
+                backdropStyle={backdropStyle}
+                show={this.state.showModal}
+                onHide={this.close}
+                dir="rtl"
+              >
+                <div style={dialogStyle()} >
+                  <h4 id='modal-label'>إضافة بطاقة</h4>
+                  <form onSubmit={this.handleAddCard}>
+                    <input name="customer_id" type="text" defaultValue={match.params.id} readOnly required/>
+                    <input name="owname" type="text" placeholder="إسم مالك البطاقة" required/>
+                    <input name="card_number" type="text" pattern="\d*" maxlength="8" placeholder="رقم البطاقة" required/>
+                    <input name="card_code" type="text" pattern="\d*" maxlength="4" placeholder="كود البطاقة" required/>
+                    <input name="type" type="text" placeholder="النوع" required/>
+                    <input name="bank" type="text" placeholder="المصرف" required/>
+                    <input name="exp" type="text" placeholder="الصلاحية" required/>
+                    <input name="state" type="text" placeholder="الحاله" required/>
+                    <input type="text" name="credit" placeholder="الرصيد" required/>
+                    <input type="text" name="drawn" placeholder="المسحوب منه" required/>
+                    <br/>
+                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                  </form>
+                  
+                  {/* <ModalExample/> */}
+                </div>
+              </Modal>
           </div>
           );}}
 
@@ -788,8 +934,8 @@ class App extends React.Component {
                 <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
                 <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
                 <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
-                <tr><td>الرقم:</td><td>{card.number}</td></tr>
-                <tr><td>الكود:</td><td>{1234}</td></tr>
+                <tr><td>الرقم:</td><td>{card.card_number}</td></tr>
+                <tr><td>الكود:</td><td>{card.card_code}</td></tr>
               </tbody>
             </Table>
           ));
@@ -803,7 +949,7 @@ class App extends React.Component {
         const home_header = () => (
           <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">مرحبا بك في فاسي لخدمات العمله</h1>
+          <h1 className="App-title">مرحبا بك في شركة الفاسي لخدمات الصرافة</h1>
           </header>
         );
 
@@ -820,7 +966,7 @@ class App extends React.Component {
             {
               Header : 'الإشاري',
               accessor : 'id',
-              Cell: props => <span className='number'><Link to={`/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+              Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
             },
             {
               id : 'name',
@@ -849,11 +995,16 @@ class App extends React.Component {
           loading={loading} // Display the loading overlay when we need it
           onFetchData={this.fetchRunnerData} // Request new data when things change
           noDataText="ﻻ توجد بيانات مطابقة !"
+          loadingText="جاري التحميل"
+          nextText="التالي"
+          previousText="السابق"
+          rowsText="صفوف"
+          pageText="صفحة"
           filterable
           minRows={3}
           defaultPageSize={10}
           />
-          <Link to="/addRunner" className="btn btn-info">ADD</Link>
+          <Link to="/build/admin/addRunner" className="btn btn-info">إضافة</Link>
           </div>
           )};
         
@@ -925,8 +1076,9 @@ class App extends React.Component {
                         ref={ref => {
                           this._select = ref
                         }}
+                        
                         value={this.state.selectedRunner}
-                        defaultValue={this.state.selectedRunner}
+                        // defaultValue={this.state.selectedRunner}
                         >
                           {
                             runners.map((runner,index) => (
@@ -997,7 +1149,7 @@ class App extends React.Component {
           const { data } = this.state.runner;
           let id = match.params.id;
           this.fetchRunnerById(id);
-          const gotoSendCard = () => {window.location = '/sendCard'};
+          const gotoSendCard = () => {window.location = '/build/admin/sendCard'};
           return (
             <div>
               {
@@ -1016,7 +1168,7 @@ class App extends React.Component {
                         <tr><td>بطاقات فالطريق منه</td><td></td></tr>
                         <tr><td>بطاقات فالطريق اليه</td><td></td></tr>
                         <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
-                        <tr><td><Button onClick={gotoSendCard} className="btn btn-info">إرسال بطاقات</Button></td><td></td></tr>
+                        <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td></td></tr>
                       </tbody>
                     </Table>
                   )
@@ -1050,9 +1202,9 @@ class App extends React.Component {
               <br/>
               <Table ref={table => {this.addTable=table;}} responsive>
                 <tbody>
-                  <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم الساحب"/></td></tr>
-                  <tr><td>رقم الهاتف</td><td><input type="text" name="phone" title="رقم هاتف الساحب"/></td></tr>
-                  <tr><td>العموله</td><td><input type="text" name="fee" title="عمولة الساحب للبطاقة الواحدة"/></td></tr>
+                  <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم الساحب" required/></td></tr>
+                  <tr><td>رقم الهاتف</td><td><input type="text" name="phone" title="رقم هاتف الساحب" required/></td></tr>
+                  <tr><td>العموله</td><td><input type="text" name="fee" title="عمولة الساحب للبطاقة الواحدة" required/></td></tr>
                   <tr><td></td><td>
                   <Button ref={button => {this.submitTarget=button;}} type="submit" className="btn btn-info">قدّم</Button>
                   </td></tr>
@@ -1065,45 +1217,64 @@ class App extends React.Component {
             );
         }
 
+        function isLoggedIn() {
+          var sessId = sessionStorage.getItem('userData');
+          console.log(sessId);
+          if(sessId !== null){
+            console.log("you may enter");
+            return true;
+          }
+          else{
+            return false;
+          }
+        }
+
+          // function requireAuth(nextState, replace) {
+          //   if (!loggedIn()) {
+          //     replace({
+          //       pathname: '/login'
+          //     })
+          //   }
+          // }
 
     return (
       <div className="App">
         <Navbar inverse collapseOnSelect>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to="/fasi">فاسي لخدمات العمله</Link>
+              <Link to="/build/fasi">الفاسي لخدمات الصرافة</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
           <Navbar.Collapse>
             <Nav>
-              <LinkContainer to="/customers">
+              <LinkContainer to="/build/admin/customers">
                 <NavItem eventKey={1}>
                   الزبائن
                 </NavItem>
               </LinkContainer>
-              <LinkContainer to="/runners">
+              <LinkContainer to="/build/admin/runners">
                 <NavItem eventKey={2}>
                   الساحبون
                 </NavItem>
               </LinkContainer>
               <NavDropdown eventKey={3} title="المزيد" id="basic-nav-dropdown">
-                <LinkContainer to="/cards">
+                <LinkContainer to="/build/admin/cards">
                   <MenuItem eventKey={3.1}title="يعرض بيانات البطاقات">البطاقات</MenuItem>
                 </LinkContainer>
-                <LinkContainer to="/sendCard">
+                <LinkContainer to="/build/admin/sendCard">
                   <MenuItem eventKey={3.1}title="يعرض قائمة إرسال البطاقات">إرسال البطاقات</MenuItem>
                 </LinkContainer>
-                <LinkContainer to="/queue">
+                <LinkContainer to="/build/admin/queue">
                   <MenuItem eventKey={3.1}title="يعرض البطاقات التي فالإنتظار">بطاقات فالإنتظار</MenuItem>
                 </LinkContainer>
-                <LinkContainer to="/transactions">
-                  <MenuItem eventKey={3.1}title="يعرف جميع المعاملات">المعاملات</MenuItem>
+                <LinkContainer to="/build/admin/transactions">
+                  <MenuItem eventKey={3.1}title="يعرض جميع المعاملات">المعاملات</MenuItem>
                 </LinkContainer>
                 <MenuItem eventKey={3.2}>التقارير</MenuItem>
                 <MenuItem eventKey={3.3}>الإعدادات</MenuItem>
                 <MenuItem divider />
-                <LinkContainer to="/users">
+                <LinkContainer to="/build/admin/users">
                 <MenuItem eventKey={3.3} title="يعرض بيانات المستخدمين">المستخدمون</MenuItem>
                 </LinkContainer>
               </NavDropdown>
@@ -1120,24 +1291,37 @@ class App extends React.Component {
         </Navbar>
         
         <Switch>
-        <Route path="/customers" render={pg_customer} />
-        <Route path="/cards" render={pg_card} />
-        <Route path="/addCustomer" render={pg_addCustomer} />
-        <Route path="/runners" render={pg_runner} />
-        <Route path="/runner/:id" render={cmp_runner} />
-        <Route path="/addRunner" render={pg_addRunner} />
-        <Route path="/sendCard" render={sendCard}/>
-        <Route path="/done" render={done}/>
-        <Route path="/queue" render={pg_queue}/>
-        <Route path="/transactions" render={home_header}/>
-        <Route path="/users" render={Users}/>
-        <Route path="/customer/:id" render={Customer} />
-        <Route path="/card/:id" render={Card} />
-        <Route path="/fasi" render={home_header} />
-        <Route path="/login" component={Login} />
-        <Route path="/" component={Welcome}/>
-        <Route path="/addCard" />
-        <Route render={alert404} />
+        <Route path="/build/admin" render={() => (
+          isLoggedIn() ? (
+            <Switch>
+            <Route path="/build/admin/customers" render={pg_customer} />
+            <Route path="/build/admin/cards" render={pg_card} />
+            <Route path="/build/admin/addCustomer" render={pg_addCustomer} />
+            <Route path="/build/admin/runners" render={pg_runner} />
+            <Route path="/build/admin/runner/:id" render={cmp_runner} />
+            <Route path="/build/admin/addRunner" render={pg_addRunner} />
+            <Route path="/build/admin/sendCard" render={sendCard}/>
+            <Route path="/build/admin/done" render={done}/>
+            <Route path="/build/admin/queue" render={pg_queue}/>
+            <Route path="/build/admin/transactions" render={home_header}/>
+            <Route path="/build/admin/users" render={Users}/>
+            <Route path="/build/admin/customer/:id" render={Customer} />
+            <Route path="/build/admin/card/:id" render={Card} />
+            <Route path="/build/admin/addCard" />
+            </Switch>
+            
+          ) : (
+            // {pg_customer}
+            <Redirect to="/build/login"/>
+          )
+        )}/>
+        
+        
+        <Route path="/build/fasi" render={home_header} />
+        <Route path="/build/login" component={Login} />
+        {/* <Route path="/logout" component={Logout}/> */}
+        <Route path="/build" component={Welcome}/>
+        <Route path="*" render={alert404} />
         </Switch>
 
         <NotificationContainer/>
