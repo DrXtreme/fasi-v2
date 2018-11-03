@@ -24,6 +24,8 @@ import checkboxHOC from "react-table/lib/hoc/selectTable";
 
 const url = 'http://admin.fasicurrency.com/sbuild/';
 
+
+
 let rand = ()=> (Math.floor(Math.random() * 20) - 10);
 
             const modalStyle = {
@@ -112,6 +114,7 @@ let rand = ()=> (Math.floor(Math.random() * 20) - 10);
 class App extends React.Component {
   constructor(props, context) {
     super(props, context);
+    this._runnerUser = React.createRef();
     // const data = getData();
     this.state = {
       customer: {
@@ -151,7 +154,8 @@ class App extends React.Component {
       selectAll: false,
       selectedRunner: '',
       showModal: false,
-      submitIsDisabled: false
+      submitIsDisabled: false,
+      runnerUser : ""
     };
     this.fetchCustomerData = this.fetchCustomerData.bind(this);
     this.fetchCardData = this.fetchCardData.bind(this);
@@ -178,7 +182,51 @@ class App extends React.Component {
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
     this.handleAddCard = this.handleAddCard.bind(this);
+    this.handleRunnerUserChange = this.handleRunnerUserChange.bind(this);
+    this.handleAddRunnerUser = this.handleAddRunnerUser.bind(this);
+    this.loginAction = this.loginAction.bind(this);
   }
+
+  async loginAction(runner_id) {
+    var form = new FormData();
+    form.set('hasLogin',1);
+    form.set('runner_id',runner_id);
+    const res = await fetch(url, {
+      method: 'POST',
+      body: form
+    });
+    if (res === 1) {
+      return (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>);
+    }
+    else if (res === 0) {
+      return(<Button className="btn btn-info" onClick={this.open}>تغيير كلمة المرور</Button>);
+    }
+  };
+
+  handleAddRunnerUser(e){
+    e.preventDefault();
+    NotificationManager.warning("تتم إضافة معرف دخول للساحب","الرجاء الإنتظار");
+    const form = new FormData(e.target);
+    form.set('addRunnerUser',1);
+    fetch(url,{
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.text())
+    .then(resText => {
+      if(resText === "Success"){
+        NotificationManager.success("تمت إضافة معرف الدخول للساحب","نجاح");
+        this.close();
+      }else{
+        NotificationManager.error("فشل إضافة معرف الدخول للساحب","خطأ");
+        this.close();
+      }
+    });
+  }
+
+  handleRunnerUserChange(e){
+    this.setState({runnerUser:e.target.value+"@fasicurrency.com"});
+  }  
 
   handleAddCard(e){
     e.preventDefault();
@@ -187,9 +235,6 @@ class App extends React.Component {
     // e.currentTarget.classList.add("disabled");
     NotificationManager.warning("تتم إضافة البطاقة","الرجاء الإنتظار");
     const form = new FormData(e.target);
-    for (var [key, value] of form.entries()) { 
-      console.log(key, value);
-    }
     form.set('addCard',1);
     fetch(url,{
       method:'POST',
@@ -1150,6 +1195,9 @@ class App extends React.Component {
           let id = match.params.id;
           this.fetchRunnerById(id);
           const gotoSendCard = () => {window.location = '/build/admin/sendCard'};
+          //const email = ReactDOM.findDOMNode(this._runnerUser).value+"@fasicurrency.com";
+          // isLoggedIn() ? (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>
+          
           return (
             <div>
               {
@@ -1169,6 +1217,28 @@ class App extends React.Component {
                         <tr><td>بطاقات فالطريق اليه</td><td></td></tr>
                         <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
                         <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td></td></tr>
+                        <tr><td>{this.loginAction(match.params.id)}</td><td></td></tr>
+                        <Modal
+                          aria-labelledby='modal-label'
+                          style={modalStyle}
+                          backdropStyle={backdropStyle}
+                          show={this.state.showModal}
+                          onHide={this.close}
+                          dir="rtl"
+                        >
+                          <div style={dialogStyle()} >
+                            <h4 id='modal-label'>إضافة معرف دخول</h4>
+                            <form onSubmit={this.handleAddRunnerUser}>
+                              <input name="runner_id" type="text" defaultValue={match.params.id} readOnly required/>
+                              <input ref={ref => this._runnerUser=ref} name="username" type="text" placeholder="إسم المستخدم" onChange={this.handleRunnerUserChange} required/>
+                              <input name="email" type="email" placeholder="البريد الإلكتروني" value={this.state.runnerUser} required/>
+                              <input type="password" name="password" placeholder="كلمة المرور" required/>
+                              <br/>
+                              <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                            </form>
+                            {/* <ModalExample/> */}
+                          </div>
+                        </Modal>
                       </tbody>
                     </Table>
                   )
@@ -1217,9 +1287,10 @@ class App extends React.Component {
             );
         }
 
+
         function isLoggedIn() {
           var sessId = sessionStorage.getItem('userData');
-          console.log(sessId);
+          //console.log(sessId);
           if(sessId !== null){
             console.log("you may enter");
             return true;
