@@ -1113,7 +1113,7 @@ class App extends React.Component {
                   
                   cards4send.map((card,index) => {
                     return(
-                      <tr key={"row_card_"+index}><td>{card.id}</td><td>{card.owname}</td><td>{card.number}</td><td>|</td><td>
+                      <tr key={"row_card_"+index}><td>{card.id}</td><td>{card.owname}</td><td>{card.card_number}</td><td>|</td><td>
                         <select 
                         onChange={this.handleSelectRunnerChange} 
                         required
@@ -1217,7 +1217,7 @@ class App extends React.Component {
                         <tr><td>بطاقات فالطريق اليه</td><td></td></tr>
                         <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
                         <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td></td></tr>
-                        <tr><td>{this.loginAction(match.params.id)}</td><td></td></tr>
+                        <tr><td></td><td><Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button></td></tr>
                         <Modal
                           aria-labelledby='modal-label'
                           style={modalStyle}
