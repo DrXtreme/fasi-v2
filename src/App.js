@@ -20,6 +20,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import 'react-notifications/lib/notifications.css';
 import {NotificationContainer, NotificationManager} from 'react-notifications';
 import checkboxHOC from "react-table/lib/hoc/selectTable";
+import ReactToPrint from "react-to-print";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 const url = 'http://admin.fasicurrency.com/sbuild/';
@@ -115,6 +116,7 @@ class App extends React.Component {
   constructor(props, context) {
     super(props, context);
     this._runnerUser = React.createRef();
+    this._formToPrint = React.createRef();
     // const data = getData();
     this.state = {
       customer: {
@@ -138,6 +140,11 @@ class App extends React.Component {
         pages: null,
         loading: true
       },
+      log:{
+        data: [],
+        pages: null,
+        loading: true
+      },
       sendCard: {
         cards4send: [],
         runners: [],
@@ -154,8 +161,11 @@ class App extends React.Component {
       selectAll: false,
       selectedRunner: '',
       showModal: false,
+      showModalto: false,
       submitIsDisabled: false,
-      runnerUser : ""
+      runnerUser : "",
+      housefee : '',
+      date: ''
     };
     this.fetchCustomerData = this.fetchCustomerData.bind(this);
     this.fetchCardData = this.fetchCardData.bind(this);
@@ -181,10 +191,96 @@ class App extends React.Component {
     this.fetchQueueData = this.fetchQueueData.bind(this);
     this.open = this.open.bind(this);
     this.close = this.close.bind(this);
+    this.opento = this.opento.bind(this);
+    this.closeto = this.closeto.bind(this);
     this.handleAddCard = this.handleAddCard.bind(this);
     this.handleRunnerUserChange = this.handleRunnerUserChange.bind(this);
     this.handleAddRunnerUser = this.handleAddRunnerUser.bind(this);
     this.loginAction = this.loginAction.bind(this);
+    this.getfee = this.getfee.bind(this);
+    this.handleChangeFee = this.handleChangeFee.bind(this);
+    this.fetchLogData = this.fetchLogData.bind(this);
+    this.handleCustomerWithdraw = this.handleCustomerWithdraw.bind(this);
+    this.getDate = this.getDate.bind(this);
+  }
+
+  getDate(){
+    fetch(url+'?getDate').then(res => res.text()).then(reso => {this.setState({date:reso})});
+  }
+
+  handleCustomerWithdraw(e){
+    e.preventDefault();
+    ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
+    NotificationManager.warning("يتم تسجيل سحب للزبون","أرجوا الإنتظار");
+    let id = e.target.customer_id.value;
+    let amount = e.target.amount.value;
+    var form = new FormData(e.target);
+    form.set('customerWithdraw','1');
+    fetch(url,{
+      method: 'POST',
+      body:form
+    })
+    .then(res => res.text())
+    .then(reso => {
+      if(reso == "Success"){
+        this.closeto();
+        NotificationManager.success("تم تسجيل سحب للزبون","نجاح");
+        window.location.replace(`/build/admin/customertransaction/${id}/${amount}`);
+      }
+      else{
+        this.closeto();
+        NotificationManager.error("لم يتم تسجيل السحب للزبون","خطأ");
+      }
+    })
+  }
+
+  fetchLogData(){
+    this.setState.loading=true;
+    var form = new FormData();
+    form.set('getLogs','1');
+    fetch(url,{
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.setState({log:{data,loading:false}});
+    })
+  }
+
+  handleChangeFee(e){
+    e.preventDefault();
+    var form = new FormData(e.target);
+    form.set('changeHouseFee', '1');
+    fetch(url,{
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.text())
+    .then(resText => {
+      if(resText == "Success"){
+        NotificationManager.success("تم تغيير العمولة","نجاح");
+        this.getfee();
+        this.close();
+      }
+      else{
+        NotificationManager.error("فشل تغيير العمولة","خطأ");
+        this.close();
+      }
+    });
+  }
+
+  getfee(){
+    var form = new FormData();
+    form.set('getHouseFee','1');
+    fetch(url,{
+      method: 'POST',
+      body:form
+    })
+    .then(res => res.json())
+    .then(resJson => {
+      this.setState({housefee:resJson.amount});
+    })
   }
 
   async loginAction(runner_id) {
@@ -260,6 +356,13 @@ class App extends React.Component {
 
   open(){
     this.setState({showModal: true});
+  }
+  closeto(){
+    this.setState({showModalto: false});
+  }
+
+  opento(){
+    this.setState({showModalto: true});
   }
   
   fetchQueueData(){
@@ -497,7 +600,8 @@ class App extends React.Component {
       return reso.text();
     }).then(resa => {
       if(resa.toString().localeCompare("Success")===0){
-        NotificationManager.success('تمت إضافة ساحب جديد','نجاح')
+        NotificationManager.success('تمت إضافة ساحب جديد','نجاح');
+        window.location.replace('/build/admin/runners');
         }
         else{
           NotificationManager.error('فشل في إضافة ساحب جديد','خطأ');
@@ -641,6 +745,7 @@ class App extends React.Component {
     {this.fetchCustomerData()};//fetchCardData
     {this.fetchRunnerData()};//fetchRunnerDatafetchCardData
     {this.fetchCardData()};//fetchRunnerDatafetchCardData
+    {this.getfee()};//fetch house fee
   }
 
   render() {
@@ -890,7 +995,13 @@ class App extends React.Component {
                     <tr><td>تاريخ التسجيل :</td><td>{customer.created}</td></tr>
                   </tbody>
                 </Table>
-              )})
+              )});
+
+              var cards4withdraw = data2.map((card,index) => {
+                return(
+                    <option value={card.id}>{card.bank}({card.act_bal})</option>
+                )
+              })
             
           }
           catch(error){
@@ -955,7 +1066,30 @@ class App extends React.Component {
                     <br/>
                     <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
                   </form>
-                  
+                  {/* <ModalExample/> */}
+                </div>
+              </Modal>
+
+              <Button className="btn btn-danger" onClick={this.opento}>إجراء سحب</Button>
+              <Modal
+                aria-labelledby='modal-label'
+                style={modalStyle}
+                backdropStyle={backdropStyle}
+                show={this.state.showModalto}
+                onHide={this.closeto}
+                dir="rtl"
+              >
+                <div style={dialogStyle()} >
+                  <h4 id='modal-label'>إجراء سحب</h4>
+                  <form onSubmit={this.handleCustomerWithdraw}>
+                    <input name="customer_id" type="text" defaultValue={match.params.id} readOnly required/>
+                    <select name="card_id" required>
+                      {cards4withdraw}
+                    </select>
+                    <input name="amount" type="number" placeholder="المبلغ" required/>
+                    <br/>
+                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                  </form>
                   {/* <ModalExample/> */}
                 </div>
               </Modal>
@@ -1287,6 +1421,112 @@ class App extends React.Component {
             );
         }
 
+        const Settings = () => {
+          () => this.getfee;
+          return(
+            <div>
+              <Table>
+                <thead>
+                  <tr><td><Button className="btn btn-info" onClick={this.open}>تغيير العمولة</Button></td><td>{this.state.housefee}</td><td dir="rtl">عمولة الشركة:</td></tr>
+                  <tr><td><Button className="btn btn-info" disabled>تغيير اللغة</Button></td><td>العربية</td><td>اللغة</td></tr>
+                  <Modal
+                          aria-labelledby='modal-label'
+                          style={modalStyle}
+                          backdropStyle={backdropStyle}
+                          show={this.state.showModal}
+                          onHide={this.close}
+                          dir="rtl"
+                        >
+                          <div style={dialogStyle()} >
+                            <h4 id='modal-label'>تغيير العمولة</h4>
+                            <form onSubmit={this.handleChangeFee}>
+                              <p dir="rtl">العمولة الجديدة:</p>
+                              <input name="amount" type="number" required/>
+                              <br/>
+                              <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                            </form>
+                          </div>
+                        </Modal>
+                </thead>
+              </Table>
+            </div>
+          );
+        }
+
+        const Logs = () => {
+          const { data , loading} = this.state.log;
+        return( <ReactTable
+        columns={[
+          {
+            Header: 'الإشاري',
+            accessor: 'id'
+          },
+          {
+            Header: 'الإسم',
+            accessor: 'description' // String-based value accessors!
+          },
+          {
+            Header: 'الرقم',
+            accessor: 'created'
+          }
+          ]}
+        data={data}
+        //pages={pages} // Display the total number of pages
+        loading={loading} // Display the loading overlay when we need it
+        onFetchData={this.fetchLogData} // Request new data when things change
+        noDataText="ﻻ توجد بيانات مطابقة !"
+        loadingText="جاري التحميل"
+        nextText="التالي"
+        previousText="السابق"
+        rowsText="صفوف"
+        pageText="صفحة"
+        filterable
+        minRows={3}
+        defaultPageSize={10}
+        className="-striped -highlight"
+        />)
+        }
+
+        const CustomerTransaction = ({ match }) => {
+          const { data } = this.state.customer;
+          let id = match.params.id;
+          let amount = match.params.amount;
+          this.getCustomerData(id);
+          this.getDate();
+
+          return (
+            <div>
+              {
+                data.map((customer,index) => {
+                  return(
+                    <div>
+                    <Table key={"receipt"+index} ref={table => {this._formToPrint=table;}}>
+                      <tbody>
+                        <tr><td colSpan="2" dir="rtl"><b>شركة الفاسي لخدمات الصرافة</b></td></tr>
+                        <tr><td colSpan="2" dir="rtl"><b>واصل إستلام</b></td></tr>
+                        <tr><td>{customer.name}</td><td dir="rtl">إسم المستلم</td></tr>
+                        <tr><td>{customer.phone}</td><td dir="rtl">رقم هاتفه</td></tr>
+                        <tr><td style={{border:'solid'}}>$ {amount}</td><td dir="rtl">المبلغ</td></tr>
+                        <tr><td>{this.state.date}</td><td dir="rtl">التاريخ و الوقت</td></tr>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <tr><td>توقيع الموظف</td><td dir="rtl">توقيع الزبون</td></tr>
+                      </tbody>
+                    </Table>
+                    <ReactToPrint
+                      trigger={() => <a href="#">طباعة</a>}
+                      content={() => this._formToPrint}
+                    />
+                    </div>
+                  )
+                })
+              }
+            </div>
+          )
+        }
+
 
         function isLoggedIn() {
           var sessId = sessionStorage.getItem('userData');
@@ -1342,8 +1582,13 @@ class App extends React.Component {
                 <LinkContainer to="/build/admin/transactions">
                   <MenuItem eventKey={3.1}title="يعرض جميع المعاملات">المعاملات</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/build/admin/logs">
+                  <MenuItem eventKey={3.1}title="يعرض جميع السجلات">السجلات</MenuItem>
+                </LinkContainer>
                 <MenuItem eventKey={3.2}>التقارير</MenuItem>
+                <LinkContainer to="/build/admin/settings">
                 <MenuItem eventKey={3.3}>الإعدادات</MenuItem>
+                </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/build/admin/users">
                 <MenuItem eventKey={3.3} title="يعرض بيانات المستخدمين">المستخدمون</MenuItem>
@@ -1375,9 +1620,12 @@ class App extends React.Component {
             <Route path="/build/admin/done" render={done}/>
             <Route path="/build/admin/queue" render={pg_queue}/>
             <Route path="/build/admin/transactions" render={home_header}/>
+            <Route path="/build/admin/logs" render={Logs}/>
             <Route path="/build/admin/users" render={Users}/>
             <Route path="/build/admin/customer/:id" render={Customer} />
+            <Route path="/build/admin/customertransaction/:id/:amount" render={CustomerTransaction} />
             <Route path="/build/admin/card/:id" render={Card} />
+            <Route path="/build/admin/settings" render={Settings} />
             <Route path="/build/admin/addCard" />
             </Switch>
             
