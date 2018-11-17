@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {Redirect} from 'react-router-dom';
 import {PostData} from './PostData';
 import './Login.css';
 import { NotificationManager } from 'react-notifications';

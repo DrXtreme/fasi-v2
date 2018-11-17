@@ -8,18 +8,18 @@ import 'whatwg-fetch';
 import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
 import { makeRunnerData } from './RunnerAccount';
-import {PostData} from './PostData';
+// import {PostData} from './PostData';
 import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert,Modal } from 'react-bootstrap';
 import { Link, Route,Switch,Redirect,withRouter} from 'react-router-dom';
 import {done} from './done';
-import Runner from './Runner';
+// import Runner from './Runner';
 import Welcome from './welcome';
 import Login from './Login';
 import Logout from './Logout';
 import { LinkContainer } from 'react-router-bootstrap';
 import 'react-notifications/lib/notifications.css';
 import {NotificationContainer, NotificationManager} from 'react-notifications';
-import checkboxHOC from "react-table/lib/hoc/selectTable";
+// import checkboxHOC from "react-table/lib/hoc/selectTable";
 import ReactToPrint from "react-to-print";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -145,6 +145,16 @@ class App extends React.Component {
         pages: null,
         loading: true
       },
+      deposit:{
+        data: [],
+        pages: null,
+        loading: true
+      },
+      vdeposit:{
+        data: [],
+        pages: null,
+        loading: true
+      },
       sendCard: {
         cards4send: [],
         runners: [],
@@ -202,6 +212,61 @@ class App extends React.Component {
     this.fetchLogData = this.fetchLogData.bind(this);
     this.handleCustomerWithdraw = this.handleCustomerWithdraw.bind(this);
     this.getDate = this.getDate.bind(this);
+    this.fetchDepositsData = this.fetchDepositsData.bind(this);
+    this.verifyDeposit = this.verifyDeposit.bind(this);
+    this.fetchVDepositsData = this.fetchVDepositsData.bind(this);
+  }
+
+  fetchVDepositsData(){
+    var form = new FormData();
+    form.set('getVDeposits',1);
+
+    fetch(url,{
+      method: 'POST',
+      body:form
+    })
+    .then(res => res.json())
+    .then(reso => {
+      this.setState({vdeposit:{data:reso}});
+    })
+  }
+
+  verifyDeposit(row){
+    if(window.confirm("متأكد من تأكيد هذا الإيداع؟")){
+      NotificationManager.warning("يتم تأكيد الأيداع","الرجاء الإنتظار");
+      var form = new FormData();
+      form.set('verifyDeposit',1);
+      form.set('deposit_id', row.row.id);
+
+      fetch(url,{
+        method: 'POST',
+        body:form
+      })
+      .then(res => res.text())
+      .then(reso => {
+        if(reso === "Success"){
+          NotificationManager.success("تم تأكيد الإيداع","نجاح");
+          this.fetchDepositsData();
+        }else{
+          NotificationManager.error("لم يتم تأكيد الإيداع","خطأ");
+        }
+      })
+    }
+    
+  }
+
+  fetchDepositsData(){
+    var form = new FormData();
+    form.set('getDeposits4v',1);
+
+    fetch(url,{
+      method: 'POST',
+      body:form
+    })
+    .then(res => res.json())
+    .then(reso => {
+      this.setState({deposit:{data:reso}});
+    })
   }
 
   getDate(){
@@ -222,7 +287,7 @@ class App extends React.Component {
     })
     .then(res => res.text())
     .then(reso => {
-      if(reso == "Success"){
+      if(reso === "Success"){
         this.closeto();
         NotificationManager.success("تم تسجيل سحب للزبون","نجاح");
         window.location.replace(`/build/admin/customertransaction/${id}/${amount}`);
@@ -258,7 +323,7 @@ class App extends React.Component {
     })
     .then(res => res.text())
     .then(resText => {
-      if(resText == "Success"){
+      if(resText === "Success"){
         NotificationManager.success("تم تغيير العمولة","نجاح");
         this.getfee();
         this.close();
@@ -388,7 +453,7 @@ class App extends React.Component {
     }
     if(e.target.checked === false){
       console.log("woooh");
-      var oldstate = this.state.sendCard.selection;
+      oldstate = this.state.sendCard.selection;
       var index = oldstate.findIndex(id);
       if(index > -1){
         oldstate.splice(index,1);
@@ -552,9 +617,11 @@ class App extends React.Component {
         NotificationManager.warning("إرسال البطاقة الى  "+index+" الساحب","أرجوا الإنتظار...");
         this.sendCard2Runner(id,this.state.selectedRunner);
         NotificationManager.success("تم إرسال البطاقة","نجاح");
+        return true;
       }
       catch(error){
         NotificationManager.error("ﻻ يمكن إرسال البطاقة","حدث خطأ ما");
+        return false;
       }
       });
     }
@@ -570,13 +637,7 @@ class App extends React.Component {
       body: form
     })
     .then(res => res.text())
-    .then(reso => {console.log(reso);
-      // switch(resa){
-      //   case "": break;
-      //   case "SuccessMore Success": window.location = '/done'; break;
-      //   case "Success": break;
-      //   default: break;
-      // }
+    .then(reso => {
       if(reso.toString().localeCompare("Success")===0){
         NotificationManager.success('تم إرسال البطاقة الى الساحب','نجاح');
       }
@@ -590,6 +651,7 @@ class App extends React.Component {
 
   handleAddRunner(event){
     event.preventDefault();
+    ReactDOM.findDOMNode(this.submitTarget).setAttribute("disabled", "disabled");
     const data = new FormData(event.target);
     // NOTE: you access FormData fields with `data.get(fieldName)`   
     data.set('addRunner', 1);
@@ -668,6 +730,7 @@ class App extends React.Component {
 
   handleAddCustomer(event){
     event.preventDefault();
+    ReactDOM.findDOMNode(this.submitTarget).setAttribute("disabled", "disabled");
     NotificationManager.warning("الرجاء الإنتظار...","إضافة حساب لزبون جديد");
     const data = new FormData(event.target);
     // NOTE: you access FormData fields with `data.get(fieldName)`   
@@ -764,7 +827,7 @@ class App extends React.Component {
           Header: 'الإسم',
           accessor: 'name' // String-based value accessors!
         }, {
-          Header: 'البطاقات',
+          Header: 'عدد البطاقات',
           accessor: 'cards',
           id: 'cards',
           Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
@@ -999,7 +1062,7 @@ class App extends React.Component {
 
               var cards4withdraw = data2.map((card,index) => {
                 return(
-                    <option value={card.id}>{card.bank}({card.act_bal})</option>
+                    <option key={"card4w"+index} value={card.id}>{card.bank}({card.act_bal})</option>
                 )
               })
             
@@ -1195,20 +1258,20 @@ class App extends React.Component {
           //   this.sendCard2Runner(160,this.state.selectedRunner)
           // };
 
-          const execSend = (e) => {
-            e.preventDefault;
-          }
+          // const execSend = (e) => {
+          //   e.preventDefault();
+          // }
 
-          const handleCheckbox = (checkbox,id) => {
-              console.log("ahhh");
-              if(checkbox.checked){
-              this.selectCard4send(id);
-            }
-            if(checkbox.checked === false){
-              console.log("woooh");
-              this.removeCard4send(id);
-            }
-          }
+          // const handleCheckbox = (checkbox,id) => {
+          //     console.log("ahhh");
+          //     if(checkbox.checked){
+          //     this.selectCard4send(id);
+          //   }
+          //   if(checkbox.checked === false){
+          //     console.log("woooh");
+          //     this.removeCard4send(id);
+          //   }
+          // }
           // const data = cards4send;
           // const { toggleSelection, toggleAll, isSelected, logSelection } = this;
           const { selectAll } = this.state.sendCard;
@@ -1332,54 +1395,61 @@ class App extends React.Component {
           //const email = ReactDOM.findDOMNode(this._runnerUser).value+"@fasicurrency.com";
           // isLoggedIn() ? (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>
           
-          return (
-            <div>
-              {
-                data.map((runner,index) => {
-                  return(
-                    <Table key={"runner"+index}>
-                      <tbody>
-                        <tr><td>الإشاري</td><td>{runner.id}</td></tr>
-                        <tr><td>الإسم</td><td>{runner.name}</td></tr>
-                        <tr><td>الرقم</td><td>{runner.phone}</td></tr>
-                        <tr><td>العمولة</td><td>{runner.fee}</td></tr>
-                        <tr><td>الرصيد</td><td>{runner.credit}</td></tr>
-                        <tr><td>المسحوب</td><td>{runner.drawn}</td></tr>
-                        <tr><td>المودع</td><td>{runner.diposited}</td></tr>
-                        <tr><td>بطاقات مع</td><td></td></tr>
-                        <tr><td>بطاقات فالطريق منه</td><td></td></tr>
-                        <tr><td>بطاقات فالطريق اليه</td><td></td></tr>
-                        <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
-                        <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td></td></tr>
-                        <tr><td></td><td><Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button></td></tr>
-                        <Modal
-                          aria-labelledby='modal-label'
-                          style={modalStyle}
-                          backdropStyle={backdropStyle}
-                          show={this.state.showModal}
-                          onHide={this.close}
-                          dir="rtl"
-                        >
-                          <div style={dialogStyle()} >
-                            <h4 id='modal-label'>إضافة معرف دخول</h4>
-                            <form onSubmit={this.handleAddRunnerUser}>
-                              <input name="runner_id" type="text" defaultValue={match.params.id} readOnly required/>
-                              <input ref={ref => this._runnerUser=ref} name="username" type="text" placeholder="إسم المستخدم" onChange={this.handleRunnerUserChange} required/>
-                              <input name="email" type="email" placeholder="البريد الإلكتروني" value={this.state.runnerUser} required/>
-                              <input type="password" name="password" placeholder="كلمة المرور" required/>
-                              <br/>
-                              <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
-                            </form>
-                            {/* <ModalExample/> */}
-                          </div>
-                        </Modal>
-                      </tbody>
-                    </Table>
-                  )
-                })
-              }
-            </div>
-          )
+          try{
+
+            return (
+              <div>
+                {
+                      data.map((runner,index) => {
+                        return(
+                        <Table key={"runner"+index}>
+                        <tbody>
+                          <tr style={{backgroundColor:'#37BC9B',color:'#FFFFFF',fontWeight:'bold'}}><td>الإشاري</td><td>{runner.id}</td></tr>
+                          <tr><td>الإسم</td><td>{runner.name}</td></tr>
+                          <tr><td>الرقم</td><td>{runner.phone}</td></tr>
+                          <tr style={{backgroundColor:'#00B1E1',color:'#FFFFFF',fontWeight:'bold'}}><td>العمولة</td><td>{runner.fee}</td></tr>
+                          <tr style={{backgroundColor:'#E9573F',color:'#FFFFFF',fontWeight:'bold'}}><td>الدين</td><td>{runner.credit}</td></tr>
+                          {/* <tr><td>المسحوب</td><td>{runner.drawn}</td></tr>
+                          <tr><td>المودع</td><td>{runner.diposited}</td></tr> */}
+                          {/* <tr><td>بطاقات مع</td><td></td></tr>
+                          <tr><td>بطاقات فالطريق منه</td><td></td></tr>
+                          <tr><td>بطاقات فالطريق اليه</td><td></td></tr> */}
+                          <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
+                          <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td></td></tr>
+                          <tr><td></td><td><Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button></td></tr>
+                          <Modal
+                            aria-labelledby='modal-label'
+                            style={modalStyle}
+                            backdropStyle={backdropStyle}
+                            show={this.state.showModal}
+                            onHide={this.close}
+                            dir="rtl"
+                          >
+                            <div style={dialogStyle()} >
+                              <h4 id='modal-label'>إضافة معرف دخول</h4>
+                              <form onSubmit={this.handleAddRunnerUser}>
+                                <input name="runner_id" type="text" defaultValue={match.params.id} readOnly required/>
+                                <input ref={ref => this._runnerUser=ref} name="username" type="text" placeholder="إسم المستخدم" onChange={this.handleRunnerUserChange} required/>
+                                <input name="email" type="email" placeholder="البريد الإلكتروني" value={this.state.runnerUser} required/>
+                                <input type="password" name="password" placeholder="كلمة المرور" required/>
+                                <br/>
+                                <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                              </form>
+                              {/* <ModalExample/> */}
+                            </div>
+                          </Modal>
+                        </tbody>
+                      </Table>)
+                      })
+                      
+                }
+              </div>
+            )
+
+          }catch(error){
+            console.error(error);
+          }
+          
         }
 
         const Users = () => {
@@ -1462,11 +1532,11 @@ class App extends React.Component {
             accessor: 'id'
           },
           {
-            Header: 'الإسم',
+            Header: 'الوصف',
             accessor: 'description' // String-based value accessors!
           },
           {
-            Header: 'الرقم',
+            Header: 'التاريخ',
             accessor: 'created'
           }
           ]}
@@ -1499,32 +1569,126 @@ class App extends React.Component {
               {
                 data.map((customer,index) => {
                   return(
-                    <div>
-                    <Table key={"receipt"+index} ref={table => {this._formToPrint=table;}}>
-                      <tbody>
-                        <tr><td colSpan="2" dir="rtl"><b>شركة الفاسي لخدمات الصرافة</b></td></tr>
-                        <tr><td colSpan="2" dir="rtl"><b>واصل إستلام</b></td></tr>
-                        <tr><td>{customer.name}</td><td dir="rtl">إسم المستلم</td></tr>
-                        <tr><td>{customer.phone}</td><td dir="rtl">رقم هاتفه</td></tr>
-                        <tr><td style={{border:'solid'}}>$ {amount}</td><td dir="rtl">المبلغ</td></tr>
-                        <tr><td>{this.state.date}</td><td dir="rtl">التاريخ و الوقت</td></tr>
-                        <br></br>
-                        <br></br>
-                        <br></br>
-                        <br></br>
-                        <tr><td>توقيع الموظف</td><td dir="rtl">توقيع الزبون</td></tr>
-                      </tbody>
-                    </Table>
-                    <ReactToPrint
-                      trigger={() => <a href="#">طباعة</a>}
-                      content={() => this._formToPrint}
-                    />
+                    <div key={"receipt"+index}>
+                      <div ref={table => {this._formToPrint=table;}}>
+                        <p></p>
+                        <Table>
+                          <thead>
+                            <tr><td><u>_______{this.state.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                            <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
+                          </thead>
+                          <tbody>
+                            <tr><td dir="rtl">{customer.name}</td><td>إسم المستلم</td></tr>
+                            <tr><td dir="rtl">{customer.phone}</td><td>رقم هاتفه</td></tr>
+                            <tr><td dir="rtl"><b style={{border:'solid'}}>$ {amount}</b></td><td>المبلغ</td></tr>
+                            
+                            <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
+                          </tbody>
+                        </Table>
+                      </div>
+                    
+                      <ReactToPrint
+                        trigger={() => <Button>طباعة</Button>}
+                        content={() => this._formToPrint}
+                      />
                     </div>
                   )
                 })
               }
             </div>
           )
+        }
+
+        const Deposits = () => {
+          const { data , loading} = this.state.deposit;
+          return( <ReactTable
+            columns={[
+              {
+                Header: 'الإشاري',
+                accessor: 'id'
+              },
+              {
+                Header: 'إشاري الساحب',
+                accessor: 'runner_id'
+              },
+              {
+                Header: 'القيمة',
+                accessor: 'amount'
+              },
+              {
+                Header: 'الوصف',
+                accessor: 'description' // String-based value accessors!
+              },
+              {
+                Header: 'التاريخ',
+                accessor: 'date'
+              },
+              {
+                Header: 'تأكيد',
+                Cell: row => (<Button className="btn btn-link" onClick={() => this.verifyDeposit(row)}>تأكيد</Button>)
+              }
+              ]}
+            data={data}
+            //pages={pages} // Display the total number of pages
+            loading={loading} // Display the loading overlay when we need it
+            onFetchData={this.fetchDepositsData} // Request new data when things change
+            noDataText="ﻻ توجد بيانات مطابقة !"
+            loadingText="جاري التحميل"
+            nextText="التالي"
+            previousText="السابق"
+            rowsText="صفوف"
+            pageText="صفحة"
+            filterable
+            minRows={3}
+            defaultPageSize={10}
+            className="-striped -highlight"
+          />)
+        }
+
+        const VDeposits = () => {
+          const { data , loading} = this.state.vdeposit;
+          return( <ReactTable
+            columns={[
+              {
+                Header: 'الإشاري',
+                accessor: 'id'
+              },
+              {
+                Header: 'إشاري الساحب',
+                accessor: 'runner_id'
+              },
+              {
+                Header: 'القيمة',
+                accessor: 'amount'
+              },
+              {
+                Header: 'الوصف',
+                accessor: 'description' // String-based value accessors!
+              },
+              {
+                Header: 'تاريخ التأكيد',
+                accessor: 'verify_date'
+              },
+              {
+                Header: 'تاريخ الأيداع',
+                accessor: 'date'
+              }
+              ]}
+            data={data}
+            //pages={pages} // Display the total number of pages
+            loading={loading} // Display the loading overlay when we need it
+            onFetchData={this.fetchVDepositsData} // Request new data when things change
+            noDataText="ﻻ توجد بيانات مطابقة !"
+            loadingText="جاري التحميل"
+            nextText="التالي"
+            previousText="السابق"
+            rowsText="صفوف"
+            pageText="صفحة"
+            filterable
+            minRows={3}
+            defaultPageSize={10}
+            className="-striped -highlight"
+          />)
         }
 
 
@@ -1579,6 +1743,12 @@ class App extends React.Component {
                 <LinkContainer to="/build/admin/queue">
                   <MenuItem eventKey={3.1}title="يعرض البطاقات التي فالإنتظار">بطاقات فالإنتظار</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/build/admin/deposits">
+                  <MenuItem eventKey={3.1}title="يعرض الإيداعات التي لم يتم تأكيدها">إيداعات غير مؤكدة</MenuItem>
+                </LinkContainer>
+                <LinkContainer to="/build/admin/vdeposits">
+                  <MenuItem eventKey={3.1}title="يعرض الإيداعات التي تم تأكيدها">إيداعات مؤكدة</MenuItem>
+                </LinkContainer>
                 <LinkContainer to="/build/admin/transactions">
                   <MenuItem eventKey={3.1}title="يعرض جميع المعاملات">المعاملات</MenuItem>
                 </LinkContainer>
@@ -1626,6 +1796,8 @@ class App extends React.Component {
             <Route path="/build/admin/customertransaction/:id/:amount" render={CustomerTransaction} />
             <Route path="/build/admin/card/:id" render={Card} />
             <Route path="/build/admin/settings" render={Settings} />
+            <Route path="/build/admin/deposits" render={Deposits} />
+            <Route path="/build/admin/vdeposits" render={VDeposits} />
             <Route path="/build/admin/addCard" />
             </Switch>
             
