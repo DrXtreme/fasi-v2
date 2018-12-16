@@ -27,7 +27,7 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-const url = 'http://admin.fasicurrency.com/sbuild/';
+const url = 'http://admin.fasicurrency.com/sbuild';
 
 export function makeCardData() {
     return fetch(url+'?cardAccounts=1')
