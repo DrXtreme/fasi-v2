@@ -47,7 +47,7 @@ const arrayAccounts = (jsonAccounts) => {
 }
 
 export function makeData() {
-  fetch('https://sofian.tru.io/sbuild/?accounts=1')
+  fetch('https://admin.fasicurrency.com/sbuild/?accounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => console.log(raw))

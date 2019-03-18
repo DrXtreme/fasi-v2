@@ -9,7 +9,7 @@ import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
 import { makeRunnerData } from './RunnerAccount';
 // import {PostData} from './PostData';
-import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Alert,Modal } from 'react-bootstrap';
+import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Alert,Modal,Tab,Tabs } from 'react-bootstrap';
 import { Link, Route,Switch,Redirect,withRouter} from 'react-router-dom';
 import {done} from './done';
 // import Runner from './Runner';
@@ -28,43 +28,43 @@ import "react-toggle-component/styles.css";
 import { isNumber } from 'highcharts';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-// const url = 'https://sofian.tru.io/sbuild/';
-const url = 'https://sofian.tru.io/sbuild/';
+// const url = 'https://admin.fasicurrency.com/sbuild/';
+const url = 'https://admin.fasicurrency.com/sbuild/';
 
 
 
 let rand = ()=> (Math.floor(Math.random() * 20) - 10);
 
-            const modalStyle = {
-              position: 'fixed',
-              zIndex: 1040,
-              top: 0, bottom: 0, left: 0, right: 0
-            };
-            
-            const backdropStyle = {
-              ...modalStyle,
-              zIndex: 'auto',
-              backgroundColor: '#000',
-              opacity: 0.6
-            };
-            
-            const dialogStyle = function() {
-              // we use some psuedo random coords so nested modals
-              // don't sit right on top of each other.
-              let top = -50;
-              let left = 50;
-            
-              return {
-                position: 'absolute',
-                width: 400,
-                top: top + '%', left: left + '%',
-                transform: `translate(-${top}%, -${left}%)`,
-                border: '1px solid #e5e5e5',
-                backgroundColor: 'white',
-                boxShadow: '0 5px 15px rgba(0,0,0,.5)',
-                padding: 20
-              };
-            };
+  const modalStyle = {
+    position: 'fixed',
+    zIndex: 1040,
+    top: 0, bottom: 0, left: 0, right: 0
+  };
+  
+  const backdropStyle = {
+    ...modalStyle,
+    zIndex: 'auto',
+    backgroundColor: '#000',
+    opacity: 0.6
+  };
+  
+  const dialogStyle = function() {
+    // we use some psuedo random coords so nested modals
+    // don't sit right on top of each other.
+    let top = -50;
+    let left = 50;
+  
+    return {
+      position: 'absolute',
+      width: 400,
+      top: top + '%', left: left + '%',
+      transform: `translate(-${top}%, -${left}%)`,
+      border: '1px solid #e5e5e5',
+      backgroundColor: 'white',
+      boxShadow: '0 5px 15px rgba(0,0,0,.5)',
+      padding: 20
+    };
+  };
 // const CheckboxTable = checkboxHOC(ReactTable);
 
 // function cards4sendData(){
@@ -3303,7 +3303,7 @@ class App extends React.Component {
             data={data}
             //pages={pages} // Display the total number of pages
             loading={loading} // Display the loading overlay when we need it
-            onFetchData={this.fetchDepositsData} // Request new data when things change
+            onFetchData={()=>this.fetchDepositsData} // Request new data when things change
             noDataText="ﻻ توجد بيانات مطابقة !"
             loadingText="جاري التحميل"
             nextText="التالي"
@@ -3566,6 +3566,287 @@ class App extends React.Component {
           }
         }
 
+        class Transactions extends React.Component{
+          constructor(props, context) {
+            super(props, context);
+            this.state = {
+              cardtransaction:{
+                crdata: [],
+                pages: null,
+                crloading: true
+              },
+              customertransaction:{
+                data: [],
+                pages:null,
+                loading: true
+              },
+              housetransaction:{
+                hsdata: [],
+                pages: null,
+                hsloading: true
+              },
+              runnertransaction:{
+                rndata: [],
+                pages: null,
+                rnloading: true
+              }
+            }
+            this.getCustomerTransactions = this.getCustomerTransactions.bind(this);
+            this.getCardTransactions = this.getCardTransactions.bind(this);
+            this.getRunnerTransactions = this.getRunnerTransactions.bind(this);
+            this.getHouseTransactions = this.getHouseTransactions.bind(this);
+          }
+          getHouseTransactions(state, instance){
+            let form = new FormData();
+            form.append('getHouseTransactions','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({housetransaction:{hsdata:reso,hsloading:false}});
+            })
+          }
+          getRunnerTransactions(state, instance){
+            let form = new FormData();
+            form.append('getRunnerTransactions','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({runnertransaction:{rndata:reso,crloading:false}});
+            })
+          }
+          getCardTransactions(state, instance){
+            let form = new FormData();
+            form.append('getCardTransactions','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({cardtransaction:{crdata:reso,crloading:false}});
+            })
+          }
+          getCustomerTransactions(state, instance){
+            let form = new FormData();
+            form.append('getCustomerTransactions','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({customertransaction:{data:reso,loading:false}});
+            })
+          }
+          componentDidMount(){
+            this.getCustomerTransactions();
+            this.getCardTransactions();
+            this.getRunnerTransactions();
+            this.getHouseTransactions();
+          }
+          render(){
+            const {data,loading} = this.state.customertransaction;
+            const {crdata,crloading} = this.state.cardtransaction;
+            const {rndata,rnloading} = this.state.runnertransaction;
+            const {hsdata,hsloading} = this.state.housetransaction;
+
+            return(
+              <div>
+                <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
+                  <h5>المعاملات</h5>
+                </Well>
+                <Tabs defaultActiveKey="home" transition={false} id="noanim-tab-example">
+                  <Tab eventKey="home" title="التسليمات">
+                        <ReactTable
+                          columns={[
+                            {
+                              Header: 'الإشاري',
+                              accessor: 'id'
+                            },
+                            {
+                              Header: 'إشاري البطاقة',
+                              accessor: 'card_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                            }, {
+                              Header: 'القيمة',
+                              accessor: 'amount',
+                              id: 'amount',
+                              Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                            },{
+                              Header: 'النوع',
+                              accessor: 'type', // String-based value accessors!
+                              Cell: props => <span className='number'>{props.value = "increase" ? "سحب" : " "}</span> // Custom cell components!
+                            },{
+                              Header: 'السبب',
+                              accessor: 'cause' // String-based value accessors!
+                            },{
+                              Header: 'التاريخ',
+                              accessor: 'date' // String-based value accessors!
+                            },{
+                              Header: 'تعديل',
+                              Cell: row => (<Button className="btn btn-link" onClick={() => alert("هذه الخدمه غير متوفرة حاليا")}>تعديل</Button>)
+                            }
+                            ]}
+                          className="-striped -highlight"
+                          data={data}
+                          //pages={pages} // Display the total number of pages
+                          loading={loading} // Display the loading overlay when we need it
+                          onFetchData={this.getCustomerTransactions} // Request new data when things change
+                          noDataText="ﻻ توجد بيانات مطابقة !"
+                          loadingText="جاري التحميل"
+                          nextText="التالي"
+                          previousText="السابق"
+                          rowsText="صفوف"
+                          pageText="صفحة"
+                          filterable
+                          minRows={3}
+                          defaultPageSize={10}
+                        />
+                  </Tab>
+                  <Tab eventKey="profile" title="البطاقات">
+                  <ReactTable
+                          columns={[
+                            {
+                              Header: 'الإشاري',
+                              accessor: 'id'
+                            },
+                            {
+                              Header: 'إشاري البطاقة',
+                              accessor: 'card_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                            }, {
+                              Header: 'القيمة',
+                              accessor: 'amount',
+                              id: 'amount',
+                              Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                            },{
+                              Header: 'النوع',
+                              accessor: 'type', // String-based value accessors!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                            },{
+                              Header: 'السبب',
+                              accessor: 'cause' // String-based value accessors!
+                            },{
+                              Header: 'التاريخ',
+                              accessor: 'date' // String-based value accessors!
+                            },
+                            ]}
+                          className="-striped -highlight"
+                          data={crdata}
+                          //pages={pages} // Display the total number of pages
+                          loading={crloading} // Display the loading overlay when we need it
+                          onFetchData={()=>this.getCardTransactions} // Request new data when things change
+                          noDataText="ﻻ توجد بيانات مطابقة !"
+                          loadingText="جاري التحميل"
+                          nextText="التالي"
+                          previousText="السابق"
+                          rowsText="صفوف"
+                          pageText="صفحة"
+                          filterable
+                          minRows={3}
+                          defaultPageSize={10}
+                        />
+                  </Tab>
+                  <Tab eventKey="contact" title="الساحبين">
+                  <ReactTable
+                          columns={[
+                            {
+                              Header: 'الإشاري',
+                              accessor: 'id'
+                            },
+                            {
+                              Header: 'إشاري البطاقة',
+                              accessor: 'card_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                            }, {
+                              Header: 'القيمة',
+                              accessor: 'amount',
+                              id: 'amount',
+                              Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                            },{
+                              Header: 'النوع',
+                              accessor: 'type', // String-based value accessors!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                            },{
+                              Header: 'السبب',
+                              accessor: 'cause' // String-based value accessors!
+                            },{
+                              Header: 'التاريخ',
+                              accessor: 'date' // String-based value accessors!
+                            },
+                            ]}
+                          className="-striped -highlight"
+                          data={rndata}
+                          //pages={pages} // Display the total number of pages
+                          loading={rnloading} // Display the loading overlay when we need it
+                          onFetchData={()=>this.getRunnerTransactions} // Request new data when things change
+                          noDataText="ﻻ توجد بيانات مطابقة !"
+                          loadingText="جاري التحميل"
+                          nextText="التالي"
+                          previousText="السابق"
+                          rowsText="صفوف"
+                          pageText="صفحة"
+                          filterable
+                          minRows={3}
+                          defaultPageSize={10}
+                        />
+                  </Tab>
+                  <Tab eventKey="contactus" title="الشركة">
+                  <ReactTable
+                          columns={[
+                            {
+                              Header: 'الإشاري',
+                              accessor: 'id'
+                            },
+                            {
+                              Header: 'إشاري البطاقة',
+                              accessor: 'card_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                            }, {
+                              Header: 'القيمة',
+                              accessor: 'amount',
+                              id: 'amount',
+                              Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                            },{
+                              Header: 'النوع',
+                              accessor: 'type', // String-based value accessors!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                            },{
+                              Header: 'السبب',
+                              accessor: 'cause' // String-based value accessors!
+                            },{
+                              Header: 'التاريخ',
+                              accessor: 'date' // String-based value accessors!
+                            },
+                            ]}
+                          className="-striped -highlight"
+                          data={hsdata}
+                          //pages={pages} // Display the total number of pages
+                          loading={hsloading} // Display the loading overlay when we need it
+                          onFetchData={()=>this.getHouseTransactions} // Request new data when things change
+                          noDataText="ﻻ توجد بيانات مطابقة !"
+                          loadingText="جاري التحميل"
+                          nextText="التالي"
+                          previousText="السابق"
+                          rowsText="صفوف"
+                          pageText="صفحة"
+                          filterable
+                          minRows={3}
+                          defaultPageSize={10}
+                        />
+                  </Tab>
+                </Tabs>
+              </div>
+            );
+          }
+        }
+
         function Modal2(props){//props. label submit innerForm show onHide
           return(
             <Modal
@@ -3696,7 +3977,7 @@ class App extends React.Component {
             <Route path="/build/admin/recCard" component={recCard}/>
             <Route path="/build/admin/done" render={done}/>
             <Route path="/build/admin/queue" render={pg_queue}/>
-            <Route path="/build/admin/transactions" render={home_header}/>
+            <Route path="/build/admin/transactions" component={Transactions}/>
             <Route path="/build/admin/logs" render={Logs}/>
             <Route path="/build/admin/users" render={Users}/>
             <Route path="/build/admin/customer/:id" component={Custo} />

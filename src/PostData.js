@@ -1,5 +1,5 @@
 export function PostData(type, userData) {
-    let BaseURL = 'https://sofian.tru.io/api/';
+    let BaseURL = 'https://admin.fasicurrency.com/api/';
     console.log(BaseURL+type);
     return new Promise((resolve, reject) =>{
     fetch(BaseURL+type, {
