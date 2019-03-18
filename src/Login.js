@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import {PostData} from './PostData';
 import './Login.css';
 import { NotificationManager } from 'react-notifications';
+import {Button} from 'react-bootstrap';
+import { MDBInput, Table } from "mdbreact";
 
 class Login extends Component {
 
@@ -21,7 +23,8 @@ class Login extends Component {
 
   
 
-  login() {
+  login(e) {
+    e.preventDefault();
     if(this.state.username && this.state.password){
       PostData('login',this.state).then((result) => {
        let responseJson = result;
@@ -53,15 +56,15 @@ class Login extends Component {
     //   }
 
      return (
-      <div className="row" id="Body">
-        <div className="medium-5 columns left">
-        <h4>Login</h4><br />
-        <label>Username</label><br />
-        <input type="text" name="username" placeholder="Username" onChange={this.onChange}/><br />
-        <label>Password</label><br />
-        <input type="password" name="password"  placeholder="Password" onChange={this.onChange}/><br />
-        <input type="submit" className="button success" value="Login" onClick={this.login}/>
-        </div>
+      <div style={{textAlign:"center",width:"100%"}}>
+          <h4>تسجيل الدخول</h4><br />
+          <form onSubmit={this.login} style={{textAlign:"center",width:"100%"}}>
+            <label>معرف الدخول</label><br />
+            <input type="text" name="username" placeholder="Username" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}}/><br />
+            <label>كلمة السر</label><br />
+            <input type="password" name="password"  placeholder="Password" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}}/><br /><br />
+            <Button type="submit" className="btn btn-info" value="Login" onClick={this.login}>دخول</Button>
+          </form>
       </div>
     );
   }

@@ -9,7 +9,7 @@ import { makeData } from './Account';
 import { makeCardData } from './CardAccount';
 import { makeRunnerData } from './RunnerAccount';
 // import {PostData} from './PostData';
-import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Tooltip,Alert,Modal } from 'react-bootstrap';
+import { Well,Nav,Navbar,NavItem,NavDropdown,MenuItem,Button,Table,Overlay,Alert,Modal } from 'react-bootstrap';
 import { Link, Route,Switch,Redirect,withRouter} from 'react-router-dom';
 import {done} from './done';
 // import Runner from './Runner';
@@ -21,12 +21,15 @@ import 'react-notifications/lib/notifications.css';
 import {NotificationContainer, NotificationManager} from 'react-notifications';
 // import checkboxHOC from "react-table/lib/hoc/selectTable";
 import ReactToPrint from "react-to-print";
-import Toggle from "react-toggle-component"
-import "react-toggle-component/styles.css"
+import Toggle from "react-toggle-component";
+import {Chart, Axis, Tooltip, Geom, Legend} from "bizcharts";
+import PrintProvider, { Print,NoPrint } from 'react-easy-print';
+import "react-toggle-component/styles.css";
+import { isNumber } from 'highcharts';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-// const url = 'http://localhost/sbuild/';
-const url = 'http://admin.fasicurrency.com/sbuild/';
+// const url = 'https://sofian.tru.io/sbuild/';
+const url = 'https://sofian.tru.io/sbuild/';
 
 
 
@@ -237,6 +240,12 @@ class App extends React.Component {
     this.fetchBankById = this.fetchBankById.bind(this);
     this.handleBankEditSubmit = this.handleBankEditSubmit.bind(this);
     this.handleSelectBankChange = this.handleSelectBankChange.bind(this);
+    this.authenticate = this.authenticate.bind(this);
+  }
+
+   // fake authentication Promise
+  authenticate(){
+    return new Promise(resolve => setTimeout(resolve, 2000))
   }
 
   handleSelectBankChange(e){
@@ -766,9 +775,33 @@ class App extends React.Component {
     }).then(reso => {
       return reso.text();
     }).then(resa => {
-      if(resa.toString().localeCompare("Success")===0){
-        NotificationManager.success('تمت إضافة ساحب جديد','نجاح');
-        window.location.replace('/build/admin/runners');
+      if(resa){
+        switch(resa){
+          case "Name Exists": 
+            NotificationManager.error("الإسم موجود من قبل","خطأ");
+            ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
+            break;
+          
+          case "Phone Exists": 
+            NotificationManager.error("رقم الهاتف موجود من قبل","خطأ");
+            ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
+            break;
+          
+          case "Failure": 
+          NotificationManager.error("فشل في إضافة ساحب جديد","خطأ");
+          ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
+          break;
+          
+          
+        }
+      }
+      if(resa.toString().localeCompare("Failure")!==0){
+        if(!isNaN(resa)){
+          NotificationManager.success('تمت إضافة ساحب جديد','نجاح');
+          // window.location.replace('/build/admin/runners');
+          window.location.replace(`/build/admin/runner/${resa}`);
+        }
+        
         }
         else{
           NotificationManager.error('فشل في إضافة ساحب جديد','خطأ');
@@ -846,21 +879,40 @@ class App extends React.Component {
     }).then(reso => {
       return reso.text();
     }).then(resa => {
-      // switch(resa){
-      //   case "": break;
-      //   case "SuccessMore Success": window.location = '/done'; break;
-      //   case "Success": break;
-      //   default: break;
-      // }
       if(resa){
+        switch(resa){
+          case "Name Exists": 
+            NotificationManager.error("الإسم موجود من قبل","خطأ");
+            ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
+            break;
+          
+          case "Phone Exists": 
+            NotificationManager.error("رقم الهاتف موجود من قبل","خطأ");
+            ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
+            break;
+          
+          default:
+            if(isNumber(resa)==true){
+              NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
+              window.location.replace(`/build/admin/customer/${resa}`);
+            }
+          
+        }
+        console.log("validating response");
+        if(!isNaN(resa)){
+          console.log("valid!");
           NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
           window.location.replace(`/build/admin/customer/${resa}`);
+        }
+          // NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
+          // window.location.replace(`/build/admin/customer/${resa}`);
           // return(<Redirect to='/customers'/>);
           // this.setState({toCustomers:true});
           // this.props.history.push('/customers');
         }
         else{
           NotificationManager.error("لا يمكن إضافة الزبون","خطأ");
+            ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
         }
     });
   }
@@ -918,6 +970,17 @@ class App extends React.Component {
     {this.fetchRunnerData()};//fetchRunnerDatafetchCardData
     {this.fetchCardData()};//fetchRunnerDatafetchCardData
     {this.getfee()};//fetch house fee
+    this.authenticate().then(() => {
+      const ele = document.getElementById('ipl-progress-indicator')
+      if(ele){
+        // fade out
+        ele.classList.add('available')
+        setTimeout(() => {
+          // remove from DOM
+          ele.outerHTML = ''
+        }, 2000)
+      }
+    })
   }
 
   render() {
@@ -926,7 +989,7 @@ class App extends React.Component {
     const pg_customer = () => { 
       const { data , loading} = this.state.customer;
       return( <div>
-        <Well bsSize="small">
+        <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
           <h5>الزبائن</h5>
         </Well>
         <ReactTable
@@ -978,7 +1041,7 @@ class App extends React.Component {
       const pg_card = () => {
         const { data , loading} = this.state.card;
         return( <div>
-          <Well bsSize="small">
+          <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
               <h5>البطاقات</h5>
             </Well>
           <ReactTable
@@ -1035,6 +1098,31 @@ class App extends React.Component {
             Header: 'المتبقي',
             accessor: 'avail',
             id: 'avail'
+          },
+          {
+            Header: 'العمولة',
+            accessor: 'fee_type',
+            id: 'fee_type',
+            Cell: props => <span>{props.value != null ? (props.value.localeCompare("true")==0?"مصرف":"شركة") : "شركة"}</span>,
+            filterMethod: (filter, row) => {
+              if (filter.value === "all") {
+                return true;
+              }
+              if (filter.value === "true") {
+                return row[filter.id] == "true";
+              }
+              return row[filter.id] != "true";
+            },
+            Filter: ({ filter, onChange }) =>
+              <select
+                onChange={event => onChange(event.target.value)}
+                style={{ width: "100%" }}
+                value={filter ? filter.value : "all"}
+              >
+                <option value="all">الكل</option>
+                <option value="true">مصرف(10الاف)</option>
+                <option value="NULL">شركة(ارباب الاسر)</option>
+              </select>
           }
           ]}
         data={data}
@@ -1056,7 +1144,7 @@ class App extends React.Component {
         const pg_queue = () => {
           const { data , loading} = this.state.queue;
           return( <div>
-            <Well bsSize="small">
+            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
               <h5>بطاقات فالإنتظار</h5>
             </Well>
             <ReactTable
@@ -1123,12 +1211,12 @@ class App extends React.Component {
                 </td></tr>
               </tbody>
             </Table>
-            <Overlay {...sharedProps} placement="bottom">
-              <Tooltip id="overload-bottom" onClick={this.handleToggle}>ﻻ توجد حدود لإضافة البطاقات!</Tooltip>
-            </Overlay>
-            <Overlay {...submitProps} placement="left">
-              <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip>
-            </Overlay>
+            {/* <Overlay {...sharedProps} placement="bottom"> */}
+              {/* <Tooltip id="overload-bottom" onClick={this.handleToggle}>ﻻ توجد حدود لإضافة البطاقات!</Tooltip> */}
+            {/* </Overlay> */}
+            {/* <Overlay {...submitProps} placement="left"> */}
+              {/* <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip> */}
+            {/* </Overlay> */}
           </form>
           );
         };
@@ -1178,6 +1266,8 @@ class App extends React.Component {
               showModal: false,
               showModalto: false,
               showModaltree: false,
+              showModalfoor: false,
+              showModalfive: false,
               submitIsDisabled: false,
               runnerUser : "",
               housefee : '',
@@ -1185,7 +1275,9 @@ class App extends React.Component {
               redirect: false,
               redirectTo: "",
               bankChecked: false,
-              card4RecCust: []
+              card4RecCust: [],
+              customerUserExist: null,
+              customerUser: null
             };
             this.getTarget = this.getTarget.bind(this);
             this.getSubmitTarget = this.getSubmitTarget.bind(this);
@@ -1198,6 +1290,10 @@ class App extends React.Component {
             this.closeto = this.closeto.bind(this);
             this.opentree = this.opentree.bind(this);
             this.closetree = this.closetree.bind(this);
+            this.openfoor = this.openfoor.bind(this);
+            this.closefoor = this.closefoor.bind(this);
+            this.openfive = this.openfive.bind(this);
+            this.closefive = this.closefive.bind(this);
             this.handleAddCard = this.handleAddCard.bind(this);
             this.handleCustomerWithdraw = this.handleCustomerWithdraw.bind(this);
             this.getDate = this.getDate.bind(this);
@@ -1205,6 +1301,128 @@ class App extends React.Component {
             this.handleSelectBankChange = this.handleSelectBankChange.bind(this);
             this.handleCustomerReceiveCard = this.handleCustomerReceiveCard.bind(this);
             this.fetchcard4RecCust = this.fetchcard4RecCust.bind(this);
+            this.handleAddCustomerUser = this.handleAddCustomerUser.bind(this);
+            this.checkCustomerUser = this.checkCustomerUser.bind(this);
+            this.getCustomerUser = this.getCustomerUser.bind(this);
+            this.handleChangeCustomerPass = this.handleChangeCustomerPass.bind(this);
+            this.handleEditCustomer = this.handleEditCustomer.bind(this);
+          }
+
+          handleEditCustomer(e){
+            e.preventDefault();
+            const { id } = this.props.match.params;
+            ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
+            // this.setState({submitIsDisabled:true});
+            // e.currentTarget.classList.add("disabled");
+            NotificationManager.warning("يتم تعديل الزبون","الرجاء الإنتظار");
+            const form = new FormData(e.target);
+            form.append('editCustomer',1);
+            fetch(url,{
+              method:'POST',
+              body:form
+            })
+            .then(res => res.text())
+            .then(textRes => {
+              if(textRes === "Success"){
+                this.closefive();
+                NotificationManager.success("تم تعديل الزبون بنجاح","نجاح");
+                this.getCustomerData(id);
+              }else{
+                this.closefive();
+                NotificationManager.error("ﻻ يمكن تعديل الزبون","خطأ");
+                // this.setState({submitIsDisabled:false});
+              }
+            })
+          }
+          
+          handleChangeCustomerPass(e){
+            e.preventDefault();
+            NotificationManager.warning("يتم تغيير كلمة سر للزبون","الرجاء الإنتظار");
+            const form = new FormData(e.target);
+            form.set('changeCustomerPass',1);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Success"){
+                NotificationManager.success("تم تغيير كلمة سر للزبون","نجاح");
+                this.closefoor();
+              }
+              else{
+                NotificationManager.error("فشل تغيير كلمة سر للزبون","خطأ");
+                this.closefoor();
+              }
+            });
+          }
+
+          getCustomerUser(){
+            const { id } = this.props.match.params;
+            var form = new FormData();
+            form.append("getCustomerUser",1);
+            form.append("customer_id",id);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Doesn't Exists"){
+                this.setState({customerUser:null});
+              }
+              else{
+                this.setState({customerUser:resText});
+              }
+            });
+          }
+
+          checkCustomerUser(){
+            const { id } = this.props.match.params;
+            var form = new FormData();
+            form.append("checkCustomerUser",1);
+            form.append("customer_id",id);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Doesn't Exists"){
+                this.setState({customerUserExist:false});
+              }
+              else if(resText === "Exists"){
+                this.setState({customerUserExist:true});
+              }
+              else{
+
+              }
+            });
+          }
+
+          handleAddCustomerUser(e){
+            e.preventDefault();
+            NotificationManager.warning("تتم إضافة معرف دخول للزبون","الرجاء الإنتظار");
+            const form = new FormData(e.target);
+            form.set('addCustomerUser',1);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Success"){
+                NotificationManager.success("تمت إضافة معرف الدخول للزبون","نجاح");
+                this.closefoor();
+              }
+              else if(resText === "Exists"){
+                NotificationManager.error("معرف الدخول للزبون موجود من قبل, أعد المحاولة","خطأ");
+              }
+              else{
+                NotificationManager.error("فشل إضافة معرف الدخول للزبون","خطأ");
+                this.closefoor();
+              }
+            });
           }
 
           fetchcard4RecCust(cuid){
@@ -1345,6 +1563,22 @@ class App extends React.Component {
             this.setState({showModaltree: true});
           }
 
+          closefoor(){
+            this.setState({showModalfoor: false});
+          }
+        
+          openfoor(){
+            this.setState({showModalfoor: true});
+          }
+
+          closefive(){
+            this.setState({showModalfive: false});
+          }
+        
+          openfive(){
+            this.setState({showModalfive: true});
+          }
+
           getCustomerData(id) {
             () => this.setState({customer:{loading:true}});
             var formData = new FormData();
@@ -1395,22 +1629,27 @@ class App extends React.Component {
             this.fetchcard4RecCust(id);
             this.getCustomerData(id);
             this.fetchBankData();
+            this.checkCustomerUser();
+            this.getCustomerUser();
           }
           render(){
             const { data , data2 , loading} = this.state.customer;
             const  banks  = this.state.bank.data;
             const { id } = this.props.match.params;
+            var last_customer=[];
 
             try{
               var customer;
               // if(typeof(data[0]) !== 'undefined'){
               customer = data.map((customer,index) => {
+                last_customer=customer;
                 return(
                   <Table ref={table => {this.addTable=table;}} key={index} responsive>
                     <tbody>
                       <tr><td>الإشاري:</td><td>{customer.id}</td></tr>
                       <tr><td>الإسم:</td><td>{customer.name}</td></tr>
                       <tr><td>عددالبطاقات:</td><td>{customer.cards}</td></tr>
+                      <tr><td>إجمالي التسليمات:</td><td>{customer.tots_withdrawn}</td></tr>
                       <tr><td>الهاتف:</td><td>{customer.phone}</td></tr>
                       <tr><td>إشاري البطاقة:</td><td>{customer.cards_id}</td></tr>
                       <tr><td>تاريخ التسجيل :</td><td>{customer.created}</td></tr>
@@ -1474,6 +1713,14 @@ class App extends React.Component {
                       id : 'act_bal',
                       Header : 'الرصيد الفعلي',
                       accessor : 'act_bal'
+                    },{
+                      id : 'tot_withdrawn',
+                      Header : 'إجمالي المستلم',
+                      accessor : 'tot_withdrawn'
+                    },{
+                      id : 'whereis',
+                      Header : 'مكان البطاقة',
+                      accessor : 'whereis'
                     }
                   ]
                 }
@@ -1555,12 +1802,88 @@ class App extends React.Component {
                       <select name="card_id" required>
                         {card4RecCust}
                       </select>
-                      <br/>
+                      <Well>يمكن فقط تسليم بطاقة توجد لدى الشركة</Well>
                       <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
                     </form>
                     {/* <ModalExample/> */}
                   </div>
                 </Modal>
+
+                <Button className="btn btn-warning" onClick={this.openfive}>تعديل</Button>
+                <Modal
+                  aria-labelledby='modal-label'
+                  style={modalStyle}
+                  backdropStyle={backdropStyle}
+                  show={this.state.showModalfive}
+                  onHide={this.closefive}
+                  dir="rtl"
+                >
+                  <div style={dialogStyle()} >
+                    <h4 id='modal-label'>تعديل ملف زبون</h4>
+                    <form onSubmit={this.handleEditCustomer}>
+                    <Table>
+                      <tbody>
+                        <tr><td><input name="customer_id" type="text" defaultValue={this.props.match.params.id} readOnly required/></td></tr>
+                        <tr><td><input name="name" type="text" defaultValue={last_customer.name} placeholder="الإسم" required/></td></tr>
+                        <tr><td><input name="phone" type="text" defaultValue={last_customer.phone} pattern="\d*" maxLength="8" placeholder="رقم الهاتف" required/></td></tr>
+                        </tbody>
+                    </Table>
+                    <br/>
+                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                  </form>
+                    {/* <ModalExample/> */}
+                  </div>
+                </Modal>
+
+                {this.state.customerUserExist==true?
+                  (<div><Button className="btn btn-info" onClick={this.openfoor}>تغيير كلمة المرور</Button>
+                  <Modal
+                    aria-labelledby='modal-label'
+                    style={modalStyle}
+                    backdropStyle={backdropStyle}
+                    show={this.state.showModalfoor}
+                    onHide={this.closefoor}
+                    dir="rtl"
+                  >
+                    <div style={dialogStyle()} >
+                      <h4 id='modal-label'>تغيير كلمة المرور</h4>
+                      <form onSubmit={this.handleChangeCustomerPass}>
+                        <input name="customer_id" type="text" defaultValue={this.props.match.params.id} readOnly required/>
+                        <input name="username" type="text" defaultValue={this.state.customerUser} placeholder="إسم المستخدم" readOnly required/>
+                        <input type="text" name="password" placeholder="كلمة المرور الجديدة" required/>
+                        <Well>للإستعمال على تطبيق الهواتف الذكية</Well>
+                        <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                      </form>
+                      {/* <ModalExample/> */}
+                    </div>
+                  </Modal></div>)
+                  
+                  :
+                  this.state.customerUserExist==false?(<div>
+                    <Button className="btn btn-info" onClick={this.openfoor}>إضافة معرف دخول</Button>
+                    <Modal
+                      aria-labelledby='modal-label'
+                      style={modalStyle}
+                      backdropStyle={backdropStyle}
+                      show={this.state.showModalfoor}
+                      onHide={this.closefoor}
+                      dir="rtl"
+                    >
+                      <div style={dialogStyle()} >
+                        <h4 id='modal-label'>إضافة معرف دخول</h4>
+                        <form onSubmit={this.handleAddCustomerUser}>
+                          <input name="customer_id" type="text" defaultValue={this.props.match.params.id} readOnly required/>
+                          <input ref={ref => this._customerUser=ref} name="username" type="text" placeholder="إسم المستخدم" required/>
+                          <input type="text" name="password" placeholder="كلمة المرور" required/>
+                          <Well>للإستعمال على تطبيق الهواتف الذكية</Well>
+                          <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                        </form>
+                        {/* <ModalExample/> */}
+                      </div>
+                    </Modal>
+                  </div>):(<div></div>)}
+                
+                <Button onClick={() => window.print()}>طباعة</Button>
             </div>
             );}
           }
@@ -1714,42 +2037,246 @@ class App extends React.Component {
           </div>
           );}}
 
-        const Card = ({ match }) => {
-          const {data} = this.state.card;
-          let id = match.params.id;
-          setInterval(this.getCardData(id),300);
-          // setTimeout(() => (this.getCardData(id),300));
-          const cards = data.map((card,index) => (
-            <Table key={index}>
-              <tbody>
-                <tr><td>الإشاري:</td><td>{card.id}</td></tr>
-                <tr><td>الإسم:</td><td>{card.owname}</td></tr>
-                <tr><td>النوع:</td><td>{card.type}</td></tr>
-                <tr><td>المصرف:</td><td>{card.bank}</td></tr>
-                <tr><td>الصلاحية:</td><td>{card.exp}</td></tr>
-                <tr><td>الحالة:</td><td>{card.state}</td></tr>
-                <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
-                <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
-                <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
-                <tr><td>الرقم:</td><td>{card.card_number}</td></tr>
-                <tr><td>الكود:</td><td>{card.card_code}</td></tr>
-                <tr><td>عمولة حسب المصرف:</td><td>{card.fee_type=="true"?"نعم":"ﻻ"}</td></tr>
-                <tr><td>تم دفع العمولة؟:</td><td>{card.fee_paid==1?"نعم":"ﻻ"}</td></tr>
-              </tbody>
-            </Table>
-          ));
+          class Card extends React.Component {
+            constructor(props, context) {
+              super(props, context);
+              // this._runnerUser = React.createRef();
+              this.state = {
+                card:{
+                  data:[],
+                  pages:null,
+                  loading:true
+                },
+                bank: {
+                  data: []
+                },
+                showModal: false,
+                bankChecked: false,
+                updatedBankCheck:false
+              }
+              //this.open = this.open.bind(this);
+              //this.close = this.close.bind(this);
+              //this.handleRunnerUserChange = this.handleRunnerUserChange.bind(this);
+              //this.handleAddRunnerUser = this.handleAddRunnerUser.bind(this);
+              //this.fetchRunnerById = this.fetchRunnerById.bind(this);
+              this.getCardData = this.getCardData.bind(this);
+              this.open = this.open.bind(this);
+              this.close = this.close.bind(this);
+              this.fetchBankData = this.fetchBankData.bind(this);
+              this.handleEditCard = this.handleEditCard.bind(this);
+              this.updateStateForEdit = this.updateStateForEdit.bind(this);
+            }
 
-          return(
-          <div>
-            <Well bsSize="small">
-              <h5>ملف البطاقة</h5>
-            </Well>
-            {cards}
-          </div>
-        )};
+            updateStateForEdit(checked){
+              checked = checked=="true"?true:false;
+              if(this.state.bankChecked!=checked && this.state.updatedBankCheck==false){
+                this.setState({bankChecked:checked});
+                this.setState({updatedBankCheck:true})
+              }
+            }
+
+            handleEditCard(e){
+              e.preventDefault();
+              const { id } = this.props.match.params;
+              ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
+              // this.setState({submitIsDisabled:true});
+              // e.currentTarget.classList.add("disabled");
+              NotificationManager.warning("يتم تعديل البطاقة","الرجاء الإنتظار");
+              let banke = e.target.bank_id.options[e.target.bank_id.selectedIndex].text;
+              const form = new FormData(e.target);
+              form.append('editCard',1);
+              form.append('bankFee',this.state.bankChecked);
+              form.append('bank',banke);
+              fetch(url,{
+                method:'POST',
+                body:form
+              })
+              .then(res => res.text())
+              .then(textRes => {
+                if(textRes === "Success"){
+                  this.close();
+                  NotificationManager.success("تم تعديل البطاقة بنجاح","نجاح");
+                  this.getCardData(id);
+                }else{
+                  this.close();
+                  NotificationManager.error("ﻻ يمكن تعديل البطاقة","خطأ");
+                  // this.setState({submitIsDisabled:false});
+                }
+              })
+            }
+
+            fetchBankData(){
+              var form = new FormData();
+              form.set('banks',1);
+              fetch(url,{
+                method: 'POST',
+                body: form
+              }).then(res => res.json())
+              .then(data => {
+                this.setState({bank:{data}})
+              })
+            }
+
+            close(){
+              this.setState({showModal: false});
+            }
+          
+            open(){
+              this.setState({showModal: true});
+            }
+
+            getCardData(id) {
+              var formData = new FormData();
+              formData.append('card', '1');
+              formData.append('id', id);
+          
+              fetch(url,{
+                method: 'POST',
+                body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                  this.setState({card:{data}});
+                })
+            }
+            componentDidMount(){
+              const { id } = this.props.match.params;
+              this.getCardData(id);
+              this.fetchBankData();
+            }
+
+            
+            render(){
+              const {data} = this.state.card;
+              const banks = this.state.bank.data;
+
+              
+                //setInterval(this.getCardData(id),300);
+                // setTimeout(() => (this.getCardData(id),300));
+                const cards = data.map((card,index) => (
+                  <div>
+                  <Table key={index} striped bordered hover responsive>
+                    <tbody>
+                      <tr><td>الإشاري:</td><td>{card.id}</td></tr>
+                      <tr><td>الإسم:</td><td>{card.owname}</td></tr>
+                      <tr><td>النوع:</td><td>{card.type}</td></tr>
+                      <tr><td>المصرف:</td><td>{card.bank}</td></tr>
+                      <tr><td>الصلاحية:</td><td>{card.exp}</td></tr>
+                      <tr><td>الحالة:</td><td>{card.state}</td></tr>
+                      <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
+                      <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
+                      <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
+                      <tr><td>الرقم:</td><td>{card.card_number}</td></tr>
+                      <tr><td>الكود:</td><td>{card.card_code}</td></tr>
+                      <tr><td>عمولة حسب المصرف:</td><td>{card.fee_type=="true"?"نعم":"ﻻ"}</td></tr>
+                      <tr><td>تم دفع العمولة؟:</td><td>{card.fee_paid==1?"نعم":"ﻻ"}</td></tr>
+                      <tr><td><Button className="btn btn-warning" onClick={this.open}>تعديل</Button></td><td></td></tr>
+                    </tbody>
+                  </Table>
+                  {this.updateStateForEdit(card.fee_type)}
+                  <Modal
+                  aria-labelledby='modal-label'
+                  style={modalStyle}
+                  backdropStyle={backdropStyle}
+                  show={this.state.showModal}
+                  onHide={this.close}
+                  dir="rtl"
+                >
+                  <div style={dialogStyle()} >
+                    <h4 id='modal-label'>تعديل بطاقة</h4>
+                    <form onSubmit={this.handleEditCard}>
+                    <Table>
+                      <tbody>
+                        <tr><td><input name="card_id" type="text" defaultValue={this.props.match.params.id} readOnly required/></td></tr>
+                        <tr><td><input name="owname" type="text" defaultValue={card.owname} placeholder="إسم مالك البطاقة" required/></td></tr>
+                        <tr><td><input name="card_number" type="text" defaultValue={card.card_number} pattern="\d*" maxLength="8" placeholder="رقم البطاقة" required/></td></tr>
+                        <tr><td><input name="card_code" type="text" defaultValue={card.card_code} pattern="\d*" maxLength="4" placeholder="كود البطاقة" required/></td></tr>
+                        <tr><td><input name="type" type="text" defaultValue={card.type} placeholder="النوع" required/></td></tr>
+                        <tr><td>
+                          <select name="bank_id" required>
+                            {
+                              banks.map((bank,index) => {
+                                if(bank.name==card.bank){
+                                  return(
+                                    <option key={"bank4crds"+index} value={bank.id} selected="selected">{bank.name}</option>
+                                  )
+                                }
+                                else{
+                                  return(
+                                    <option key={"bank4crds"+index} value={bank.id}>{bank.name}</option>
+                                  )
+                                }
+                              })
+                            }
+                          </select>
+                        </td></tr>
+                        <tr><td><input name="exp" type="text" defaultValue={card.exp} placeholder="الصلاحية" required/></td></tr>
+                        <tr><td><input name="state" type="text" defaultValue={card.state} placeholder="الحاله" required/></td></tr>
+                        <tr><td><input type="text" name="credit" defaultValue={card.credit} placeholder="الرصيد" required/></td></tr>
+                        <tr><td><input type="text" name="drawn" defaultValue={card.drawn} placeholder="المسحوب منه" required/></td></tr>
+                        <tr><td><Toggle label="عمولة المصرف" defaultChecked={card.fee_type=="true"?true:false} checked={this.state.bankChecked} onToggle={value => this.setState({bankChecked:value})} /></td></tr>
+                      </tbody>
+                    </Table>
+                    <br/>
+                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                  </form>
+                    {/* <ModalExample/> */}
+                  </div>
+                </Modal>
+                </div>
+                ));
+
+                return(
+                <div>
+                  <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
+                    <h4>ملف البطاقة</h4>
+                  </Well>
+                  {cards}
+
+                  
+                  <Button onClick={() => window.print()}>طباعة</Button>
+                </div>
+              )
+            }
+          }
+
+        // const Card = ({ match }) => {
+        //   const {data} = this.state.card;
+        //   let id = match.params.id;
+        //   setInterval(this.getCardData(id),300);
+        //   // setTimeout(() => (this.getCardData(id),300));
+        //   const cards = data.map((card,index) => (
+        //     <Table key={index}>
+        //       <tbody>
+        //         <tr><td>الإشاري:</td><td>{card.id}</td></tr>
+        //         <tr><td>الإسم:</td><td>{card.owname}</td></tr>
+        //         <tr><td>النوع:</td><td>{card.type}</td></tr>
+        //         <tr><td>المصرف:</td><td>{card.bank}</td></tr>
+        //         <tr><td>الصلاحية:</td><td>{card.exp}</td></tr>
+        //         <tr><td>الحالة:</td><td>{card.state}</td></tr>
+        //         <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
+        //         <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
+        //         <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
+        //         <tr><td>الرقم:</td><td>{card.card_number}</td></tr>
+        //         <tr><td>الكود:</td><td>{card.card_code}</td></tr>
+        //         <tr><td>عمولة حسب المصرف:</td><td>{card.fee_type=="true"?"نعم":"ﻻ"}</td></tr>
+        //         <tr><td>تم دفع العمولة؟:</td><td>{card.fee_paid==1?"نعم":"ﻻ"}</td></tr>
+        //       </tbody>
+        //     </Table>
+        //   ));
+
+        //   return(
+        //   <div>
+        //     <Well bsSize="small">
+        //       <h5>ملف البطاقة</h5>
+        //     </Well>
+        //     {cards}
+        //     <Button onClick={() => window.print()}>طباعة</Button>
+        //   </div>
+        // )};
 
         const home_header = () => (
-          <header className="App-header">
+          <header>
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">مرحبا بك في شركة الفاسي لخدمات الصرافة</h1>
           </header>
@@ -1764,7 +2291,7 @@ class App extends React.Component {
         const pg_runner = () => { 
           const { data , loading} = this.state.runner;
           return( <div>
-            <Well bsSize="small">
+            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
               <h5>الساحبون</h5>
             </Well>
             <ReactTable
@@ -1907,7 +2434,7 @@ class App extends React.Component {
             
           return (
             <div>
-              <Well bsSize="small">
+              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                 <h5>إرسال بطاقات</h5>
               </Well>
               {tbl_cards4send}
@@ -1933,7 +2460,7 @@ class App extends React.Component {
               /> */}
         
               <div>
-              <Well bsSize="large">
+              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                 {/* <form onSubmit={this.executeSendCard}>
                     {
                       opt_runners
@@ -1957,13 +2484,115 @@ class App extends React.Component {
                 loading:true
               },
               showModal: false,
-              runnerUser : ""
+              showModalto: false,
+              showModalfoor: false,
+              runnerUser : null,
+              runnerUserExist: null,
             }
             this.open = this.open.bind(this);
             this.close = this.close.bind(this);
+            this.opento = this.opento.bind(this);
+            this.closeto = this.closeto.bind(this);
+            this.openfoor = this.openfoor.bind(this);
+            this.closefoor = this.closefoor.bind(this);
             this.handleRunnerUserChange = this.handleRunnerUserChange.bind(this);
             this.handleAddRunnerUser = this.handleAddRunnerUser.bind(this);
             this.fetchRunnerById = this.fetchRunnerById.bind(this);
+            this.handleEditRunner = this.handleEditRunner.bind(this);
+            this.checkRunnerUser = this.checkRunnerUser.bind(this);
+            this.getRunnerUser = this.getRunnerUser.bind(this);
+            this.handleChangeRunnerPass = this.handleChangeRunnerPass.bind(this);
+          }
+          handleChangeRunnerPass(e){
+            e.preventDefault();
+            NotificationManager.warning("يتم تغيير كلمة سر للساحب","الرجاء الإنتظار");
+            const form = new FormData(e.target);
+            form.set('changeRunnerPass',1);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Success"){
+                NotificationManager.success("تم تغيير كلمة سر للساحب","نجاح");
+                this.closefoor();
+              }
+              else{
+                NotificationManager.error("فشل تغيير كلمة سر للساحب","خطأ");
+                this.closefoor();
+              }
+            });
+          }
+
+          getRunnerUser(){
+            const { id } = this.props.match.params;
+            var form = new FormData();
+            form.append("getRunnerUser",1);
+            form.append("runner_id",id);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Doesn't Exists"){
+                this.setState({runnerUser:null});
+              }
+              else{
+                this.setState({runnerUser:resText});
+              }
+            });
+          }
+
+          checkRunnerUser(){
+            const { id } = this.props.match.params;
+            var form = new FormData();
+            form.append("checkRunnerUser",1);
+            form.append("runner_id",id);
+            fetch(url,{
+              method: 'POST',
+              body: form
+            })
+            .then(res => res.text())
+            .then(resText => {
+              if(resText === "Doesn't Exists"){
+                this.setState({runnerUserExist:false});
+              }
+              else if(resText === "Exists"){
+                this.setState({runnerUserExist:true});
+              }
+              else{
+
+              }
+            });
+          }
+
+          handleEditRunner(e){
+            e.preventDefault();
+            const { id } = this.props.match.params;
+            ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
+            // this.setState({submitIsDisabled:true});
+            // e.currentTarget.classList.add("disabled");
+            NotificationManager.warning("يتم تعديل الساحب","الرجاء الإنتظار");
+            const form = new FormData(e.target);
+            form.append('editRunner',1);
+            fetch(url,{
+              method:'POST',
+              body:form
+            })
+            .then(res => res.text())
+            .then(textRes => {
+              if(textRes === "Success"){
+                this.closeto();
+                NotificationManager.success("تم تعديل الساحب بنجاح","نجاح");
+                this.fetchRunnerById(id);
+              }else{
+                this.closeto();
+                NotificationManager.error("ﻻ يمكن تعديل الساحب","خطأ");
+                // this.setState({submitIsDisabled:false});
+              }
+            })
           }
 
           handleAddRunnerUser(e){
@@ -1999,6 +2628,22 @@ class App extends React.Component {
             this.setState({showModal: true});
           }
 
+          closeto(){
+            this.setState({showModalto: false});
+          }
+        
+          opento(){
+            this.setState({showModalto: true});
+          }
+
+          closefoor(){
+            this.setState({showModalfoor: false});
+          }
+        
+          openfoor(){
+            this.setState({showModalfoor: true});
+          }
+
           fetchRunnerById(id){
             () => this.setState({runner:{loading:true}});
             var form = new FormData();
@@ -2017,6 +2662,8 @@ class App extends React.Component {
           componentDidMount(){
             const { id } = this.props.match.params;
             this.fetchRunnerById(id);
+            this.checkRunnerUser();
+            this.getRunnerUser();
           }
           render(){
             const { data } = this.state.runner;
@@ -2035,46 +2682,105 @@ class App extends React.Component {
                         data.map((runner,index) => {
                           return(
                             <div>
-                              <Well bsSize="small">
+                              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                                 <h5>ملف الساحب</h5>
                               </Well>
-                          <Table key={"runner"+index}>
+                          <Table key={"runner"+index} striped bordered hover responsive>
                           <tbody>
                             <tr style={{backgroundColor:'#37BC9B',color:'#FFFFFF',fontWeight:'bold'}}><td>الإشاري</td><td>{runner.id}</td></tr>
                             <tr><td>الإسم</td><td>{runner.name}</td></tr>
                             <tr><td>الرقم</td><td>{runner.phone}</td></tr>
                             <tr style={{backgroundColor:'#00B1E1',color:'#FFFFFF',fontWeight:'bold'}}><td>العمولة</td><td>{runner.fee}</td></tr>
                             <tr style={{backgroundColor:'#E9573F',color:'#FFFFFF',fontWeight:'bold'}}><td>الدين</td><td>{runner.credit}</td></tr>
+                            <tr style={{backgroundColor:'#479e7b',color:'#FFFFFF',fontWeight:'bold'}}><td>المكسب طوال الوقت</td><td>{runner.profit}</td></tr>
+                            <tr style={{backgroundColor:'#327057',color:'#FFFFFF',fontWeight:'bold'}}><td>المكسب هذا الشهر</td><td>{runner.profit_month}</td></tr>
+                            <tr style={{backgroundColor:'#38579e',color:'#FFFFFF',fontWeight:'bold'}}><td>المودع طوال الوقت</td><td>{runner.depoe}</td></tr>
+                            <tr style={{backgroundColor:'#2b4070',color:'#FFFFFF',fontWeight:'bold'}}><td>المودع هذا الشهر</td><td>{runner.depoe_month}</td></tr>
+                            <tr><td>عدد البطاقات لديه</td><td>{runner.cards_with}</td></tr>
                             {/* <tr><td>المسحوب</td><td>{runner.drawn}</td></tr>
                             <tr><td>المودع</td><td>{runner.diposited}</td></tr> */}
                             {/* <tr><td>بطاقات مع</td><td></td></tr>
                             <tr><td>بطاقات فالطريق منه</td><td></td></tr>
                             <tr><td>بطاقات فالطريق اليه</td><td></td></tr> */}
                             <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
-                            <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td><Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button></td></tr>
+                            <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td><Table><tr><td><Button className="btn btn-warning" onClick={this.opento}>تعديل</Button></td>
+                            {this.state.runnerUserExist==true?
+                              (<div><Button className="btn btn-danger" onClick={this.openfoor}>تغيير كلمة المرور</Button>
+                              <Modal
+                                aria-labelledby='modal-label'
+                                style={modalStyle}
+                                backdropStyle={backdropStyle}
+                                show={this.state.showModalfoor}
+                                onHide={this.closefoor}
+                                dir="rtl"
+                              >
+                                <div style={dialogStyle()} >
+                                  <h4 id='modal-label'>تغيير كلمة المرور</h4>
+                                  <form onSubmit={this.handleChangeRunnerPass}>
+                                    <input name="runner_id" type="text" defaultValue={this.props.match.params.id} readOnly required/>
+                                    <input name="username" type="text" defaultValue={this.state.runnerUser} placeholder="إسم المستخدم" readOnly required/>
+                                    <input type="text" name="password" placeholder="كلمة المرور الجديدة" required/>
+                                    <Well>للإستعمال على واجهة الساحبين</Well>
+                                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                                  </form>
+                                  {/* <ModalExample/> */}
+                                </div>
+                              </Modal></div>)
+                              
+                              :
+                              this.state.runnerUserExist==false?(<div>
+                                <Button className="btn btn-danger" onClick={this.openfoor}>إضافة معرف دخول</Button>
+                                <Modal
+                                  aria-labelledby='modal-label'
+                                  style={modalStyle}
+                                  backdropStyle={backdropStyle}
+                                  show={this.state.showModalfoor}
+                                  onHide={this.closefoor}
+                                  dir="rtl"
+                                >
+                                  <div style={dialogStyle()} >
+                                  <h4 id='modal-label'>إضافة معرف دخول</h4>
+                                  <form onSubmit={this.handleAddRunnerUser}>
+                                    <input name="runner_id" type="text" defaultValue={this.props.match.params.id} readOnly required/>
+                                    <input ref={ref => this._runnerUser=ref} name="username" type="text" placeholder="إسم المستخدم" onChange={this.handleRunnerUserChange} required/>
+                                    <input name="email" type="email" placeholder="البريد الإلكتروني" value={this.state.runnerUser} required/>
+                                    <input type="password" name="password" placeholder="كلمة المرور" required/>
+                                    <br/>
+                                    <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                                  </form>
+                                    {/* <ModalExample/> */}
+                                  </div>
+                                </Modal>
+                              </div>):(<div></div>)}
+                              </tr></Table></td></tr>
+                            
                             <Modal
                               aria-labelledby='modal-label'
                               style={modalStyle}
                               backdropStyle={backdropStyle}
-                              show={this.state.showModal}
-                              onHide={this.close}
+                              show={this.state.showModalto}
+                              onHide={this.closeto}
                               dir="rtl"
                             >
                               <div style={dialogStyle()} >
-                                <h4 id='modal-label'>إضافة معرف دخول</h4>
-                                <form onSubmit={this.handleAddRunnerUser}>
-                                  <input name="runner_id" type="text" defaultValue={this.props.match.params.id} readOnly required/>
-                                  <input ref={ref => this._runnerUser=ref} name="username" type="text" placeholder="إسم المستخدم" onChange={this.handleRunnerUserChange} required/>
-                                  <input name="email" type="email" placeholder="البريد الإلكتروني" value={this.state.runnerUser} required/>
-                                  <input type="password" name="password" placeholder="كلمة المرور" required/>
-                                  <br/>
-                                  <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
-                                </form>
+                                <h4 id='modal-label'>تعديل ملف ساحب</h4>
+                                <form onSubmit={this.handleEditRunner}>
+                                <Table>
+                                  <tbody>
+                                    <tr><td><input name="runner_id" type="text" defaultValue={this.props.match.params.id} readOnly required/></td></tr>
+                                    <tr><td><input name="name" type="text" defaultValue={runner.name} placeholder="الإسم" required/></td></tr>
+                                    <tr><td><input name="number" type="text" defaultValue={runner.phone} pattern="\d*" maxLength="8" placeholder="رقم الهاتف" required/></td></tr>
+                                    <tr><td><input name="fee" type="text" defaultValue={runner.fee} pattern="\d*" maxLength="4" placeholder="العمولة" required/></td></tr>
+                                    </tbody>
+                                </Table>
+                                <br/>
+                                <Button type="submit" className="btn btn-info" ref={ref => {this._button = ref}} >قدّم</Button>
+                              </form>
                                 {/* <ModalExample/> */}
                               </div>
                             </Modal>
                           </tbody>
-                        </Table></div>)
+                        </Table><Button onClick={() => window.print()}>طباعة</Button></div>)
                         })
                         
                   }
@@ -2159,7 +2865,7 @@ class App extends React.Component {
         const Users = () => {
           return(
             <div>
-              <Well bsSize="small">
+              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                 <h5>المستخدمون</h5>
               </Well>
               <Table>
@@ -2191,9 +2897,9 @@ class App extends React.Component {
                   </td></tr>
                 </tbody>
               </Table>
-              <Overlay {...submitProps} placement="left">
-                <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip>
-              </Overlay>
+              {/* <Overlay {...submitProps} placement="left"> */}
+                {/* <Tooltip id="overload-left" onClick={this.handleToggle}>عندما تكون مستعدا!</Tooltip> */}
+              {/* </Overlay> */}
             </form>
             );
         }
@@ -2202,7 +2908,7 @@ class App extends React.Component {
           () => this.getfee;
           return(
             <div>
-              <Well bsSize="small">
+              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                 <h5>الإعدادات</h5>
               </Well>
               <Table>
@@ -2236,7 +2942,7 @@ class App extends React.Component {
         const Logs = () => {
           const { data , loading} = this.state.log;
         return( <div>
-          <Well bsSize="small">
+          <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
             <h5>السجلات</h5>
           </Well>
           <ReactTable
@@ -2271,10 +2977,50 @@ class App extends React.Component {
         /></div>)
         }
 
+        class Receipt extends React.Component{
+          render(){
+            return(
+              <div>
+                <Table>
+                  <thead>
+                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                    <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td dir="rtl">{this.props.customer.name}</td><td>إسم المستلم</td></tr>
+                    <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
+                    <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
+                    
+                    <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
+                  </tbody>
+                </Table>
+                <br></br>
+                <hr></hr>
+                <br></br>
+                <Table>
+                  <thead>
+                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                    <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td dir="rtl">{this.props.customer.name}</td><td>إسم المستلم</td></tr>
+                    <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
+                    <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
+                    
+                    <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
+                  </tbody>
+                </Table>
+              </div>
+              
+            );
+            
+          }
+        }
+
         class CustomerTransaction extends React.Component {
           constructor(props, context) {
             super(props, context);
-            this._formToPrint = React.createRef();
+            //this._formToPrint = React.createRef();
             this.state = {
               customer:{
                 data:[],
@@ -2322,13 +3068,27 @@ class App extends React.Component {
             
             this.getDate();
 
+            
+
             return (
               <div>
                 {
                   data.map((customer,index) => {
                     return(
                       <div key={"receipt"+index}>
-                        <div ref={table => {this._formToPrint=table;}}>
+                        <PrintProvider>
+                        
+                        <Print printOnly single loose={true} name="foo">
+                          <Receipt
+                            ref={el => (this.componentRef = el)}
+                            customer={customer}
+                            amount={amount}
+                            date={this.state.date}
+                          />
+                        </Print>     
+
+                        </PrintProvider>
+                        <div>
                           <p></p>
                           <Table>
                             <thead>
@@ -2344,11 +3104,12 @@ class App extends React.Component {
                             </tbody>
                           </Table>
                         </div>
-                      
-                        <ReactToPrint
+                        <Button onClick={() => window.print()}>طباعة</Button>
+                        {/* <ReactToPrint
                           trigger={() => <Button>طباعة</Button>}
-                          content={() => {this._formToPrint}}
-                        />
+                          content={() => this.componentRef}
+                        /> */}
+                        
                       </div>
                     )
                   })
@@ -2459,7 +3220,7 @@ class App extends React.Component {
           render(){
             const { data , loading} = this.state.recCard;
           return( <div>
-            <Well bsSize="small">
+            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
               <h5>إستقبال البطاقات</h5>
             </Well>
             <ReactTable
@@ -2509,8 +3270,8 @@ class App extends React.Component {
         const Deposits = () => {
           const { data , loading} = this.state.deposit;
           return( <div>
-            <Well bsSize="small">
-              <h5>الأيداعات</h5>
+            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
+              <h5>الأيداعات الغير مؤكدة</h5>
             </Well>
             <ReactTable
             columns={[
@@ -2559,7 +3320,7 @@ class App extends React.Component {
         const VDeposits = () => {
           const { data , loading} = this.state.vdeposit;
           return( <div>
-            <Well bsSize="small">
+            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
               <h5>الأيداعات المؤكدة</h5>
             </Well>
         <ReactTable
@@ -2612,7 +3373,7 @@ class App extends React.Component {
           try{
             return (
               <div>
-                <Well bsSize="small">
+                <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                   <h5>المصارف</h5>
                 </Well>
                 <Table>
@@ -2654,9 +3415,9 @@ class App extends React.Component {
                   </td></tr>
                 </tbody>
               </Table>
-              <Overlay {...submitProps} placement="left">
+              {/* <Overlay {...submitProps} placement="left">
                 <Tooltip id="overload-left" onClick={this.handleToggle} dir="rtl">عندما تكون مستعدا!</Tooltip>
-              </Overlay>
+              </Overlay> */}
             </form>
             );
         }
@@ -2685,6 +3446,124 @@ class App extends React.Component {
           const {redirect, redirectTo} = this.state;
           this.setState({redirect:false,redirectTo:""});
           return <Redirect to={redirectTo}/> ;
+        }
+
+        class Reports extends React.Component{
+          constructor(props, context) {
+            super(props, context);
+            this.state = {
+              data:[],
+              cards:[],
+              month:[],
+              cardsMonth:[]
+            }
+            this.getReport = this.getReport.bind(this);
+            this.getCardReport = this.getCardReport.bind(this);
+            this.getMonthReport = this.getMonthReport.bind(this);
+            this.getCardReportMonth = this.getCardReportMonth.bind(this);
+          }
+          getCardReportMonth(){
+            let form = new FormData();
+            form.append('getCardReportsAllMonth','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({cardsMonth:reso});
+            })
+          }
+          getMonthReport(){
+            let form = new FormData();
+            form.append('getReportsAllMonth','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({month:reso});
+            })
+          }
+          getCardReport(){
+            let form = new FormData();
+            form.append('getCardReportsAllTime','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({cards:reso});
+            })
+          }
+          getReport(){
+            let form = new FormData();
+            form.append('getReportsAllTime','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({data:reso});
+            })
+          }
+          componentDidMount(){
+            this.getReport();
+            this.getCardReport();
+            this.getMonthReport();
+            this.getCardReportMonth();
+          }
+          render(){
+            // const data = [
+            //   { genre: 'Sports', sold: 275, income: 2300 },
+            //   { genre: 'Strategy', sold: 115, income: 667 },
+            //   { genre: 'Action', sold: 120, income: 982 },
+            //   { genre: 'Shooter', sold: 350, income: 5271 },
+            //   { genre: 'Other', sold: 150, income: 3710 }
+            // ];
+            const {data,cards,month,cardsMonth} = this.state;
+
+            return(
+              <div>
+                <p>تقارير كل الوقت</p>
+                <Chart width={800} height={400} data={data}>
+                  <Axis name="genre" />
+                  <Axis name="sold" />
+                  <Legend position="top" dy={-20} />
+                  <Tooltip />
+                  <Geom type="interval" position="genre*sold" color="genre" />
+                </Chart>
+                <p>تقارير البطاقات</p>
+                <Chart width={800} height={400} data={cards}>
+                  <Axis name="genre" />
+                  <Axis name="sold" />
+                  <Legend position="top" dy={-20} />
+                  <Tooltip />
+                  <Geom type="interval" position="genre*sold" color="genre" />
+                </Chart>
+                <p>تقارير هذا الشهر</p>
+                <Chart width={800} height={400} data={month}>
+                  <Axis name="genre" />
+                  <Axis name="sold" />
+                  <Legend position="top" dy={-20} />
+                  <Tooltip />
+                  <Geom type="interval" position="genre*sold" color="genre" />
+                </Chart>
+                <p>تقارير البطاقات هذا الشهر</p>
+                <Chart width={800} height={400} data={cardsMonth}>
+                  <Axis name="genre" />
+                  <Axis name="sold" />
+                  <Legend position="top" dy={-20} />
+                  <Tooltip />
+                  <Geom type="interval" position="genre*sold" color="genre" />
+                </Chart>
+                <Button onClick={() => window.print()}>طباعة</Button>
+              </div>
+            );
+          }
         }
 
         function Modal2(props){//props. label submit innerForm show onHide
@@ -2733,7 +3612,7 @@ class App extends React.Component {
           }
     return (
       <div className="App">
-        <Navbar inverse collapseOnSelect>
+        <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
               <Link to="/build/fasi">الفاسي لخدمات الصرافة</Link>
@@ -2780,7 +3659,9 @@ class App extends React.Component {
                 <LinkContainer to="/build/admin/logs">
                   <MenuItem eventKey={3.1}title="يعرض جميع السجلات">السجلات</MenuItem>
                 </LinkContainer>
+                <LinkContainer to="/build/admin/reports">
                 <MenuItem eventKey={3.2}>التقارير</MenuItem>
+                </LinkContainer>
                 <MenuItem divider />
                 <LinkContainer to="/build/admin/settings">
                 <MenuItem eventKey={3.3}>الإعدادات</MenuItem>
@@ -2820,7 +3701,7 @@ class App extends React.Component {
             <Route path="/build/admin/users" render={Users}/>
             <Route path="/build/admin/customer/:id" component={Custo} />
             <Route path="/build/admin/customertransaction/:id/:amount" component={CustomerTransaction} />
-            <Route path="/build/admin/card/:id" render={Card} />
+            <Route path="/build/admin/card/:id" component={Card} />
             <Route path="/build/admin/settings" render={Settings} />
             <Route path="/build/admin/deposits" render={Deposits} />
             <Route path="/build/admin/vdeposits" render={VDeposits} />
@@ -2829,6 +3710,7 @@ class App extends React.Component {
             <Route path="/build/admin/editBank/:id/:fee" render={pg_editBank} />
             {/* <Route path="/build/admin/custo/:id" component={Custo}/> */}
             <Route path="/build/admin/addCard" />
+            <Route path="/build/admin/reports" component={Reports}/>
             </Switch>
             
           ) : (

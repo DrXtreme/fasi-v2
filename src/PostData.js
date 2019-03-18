@@ -1,7 +1,6 @@
 export function PostData(type, userData) {
-    let BaseURL = 'http://admin.fasicurrency.com/api/';
+    let BaseURL = 'https://sofian.tru.io/api/';
     console.log(BaseURL+type);
-    //let BaseURL = 'http://localhost/PHP-Slim-Restful/api/';
     return new Promise((resolve, reject) =>{
     fetch(BaseURL+type, {
    method: 'POST',

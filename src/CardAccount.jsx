@@ -16,7 +16,8 @@ const newCardAccount = (jsonObj) => {
         drawn: jsonObj.drawn,
         avail: jsonObj.avail,
         card_code: jsonObj.card_code,
-        card_number: jsonObj.card_number
+        card_number: jsonObj.card_number,
+        fee_type: jsonObj.fee_type
     };
 };
 
@@ -27,7 +28,7 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-const url = 'http://admin.fasicurrency.com/sbuild';
+const url = 'https://sofian.tru.io/sbuild/';
 
 export function makeCardData() {
     return fetch(url+'?cardAccounts=1')

@@ -31,7 +31,7 @@ const arrayRunners = (jsonAccounts) => {
 export function makeRunnerData() {
     var form = new FormData();
     form.set('runners',1);
-    return fetch('http://admin.fasicurrency.com/sbuild/',{
+    return fetch('https://sofian.tru.io/sbuild/',{
         method: 'POST',
         body: form
     })
