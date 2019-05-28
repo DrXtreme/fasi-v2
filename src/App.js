@@ -26,6 +26,7 @@ import {Chart, Axis, Tooltip, Geom, Legend} from "bizcharts";
 import PrintProvider, { Print,NoPrint } from 'react-easy-print';
 import "react-toggle-component/styles.css";
 import { isNumber } from 'highcharts';
+import matchSorter from 'match-sorter';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 // const url = 'https://admin.fasicurrency.com/sbuild/';
@@ -997,11 +998,20 @@ class App extends React.Component {
         {
           Header: 'الإشاري',
           accessor: 'id',
+          id: 'id',
+          sortMethod: (a, b) => {
+            if (a === b) {
+              return parseInt(a) > parseInt(b) ? 1 : -1;
+            }
+            return parseInt(a) > parseInt(b) ? 1 : -1;
+          },
           Cell: props => <span className='number'><Link to={`/build/admin/customer/${props.value}`}>{props.value}</Link></span>
         },
         {
           Header: 'الإسم',
-          accessor: 'name' // String-based value accessors!
+          accessor: 'name', // String-based value accessors!
+          filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["name"] }),
+          filterAll: true,
         }, {
           Header: 'عدد البطاقات',
           accessor: 'cards',
@@ -1016,9 +1026,17 @@ class App extends React.Component {
           Header: 'اشاري البطاقة',
           accessor: 'cards_id',
           id: 'cards_id',
-          Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value != null ? props.value : "0"}</Link></span> // Custom cell components!
+          filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["cards_id"] }),
+          filterAll: true,
+          Cell: props => <span className='number'>{props.value.map((cardid,index)=>(<span><Link to={`/build/admin/card/${cardid}`}>{cardid != null ? cardid : "0"}</Link> , </span>))}</span> // Custom cell components!
         }
         ]}
+      defaultSorted={[
+        {
+          id: "id",
+          desc: true
+        }
+      ]}
       className="-striped -highlight"
       data={data}
       //pages={pages} // Display the total number of pages
@@ -1032,7 +1050,10 @@ class App extends React.Component {
       pageText="صفحة"
       filterable
       minRows={3}
-      defaultPageSize={10}
+      defaultPageSize={20}
+        style={{
+          height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+        }}
       />
       <Link to="/build/admin/addCustomer" className="btn btn-info">إضافة</Link>
       </div>
@@ -1049,11 +1070,19 @@ class App extends React.Component {
           {
             Header: 'الإشاري',
             accessor: 'id',
+            sortMethod: (a, b) => {
+              if (a === b) {
+                return parseInt(a) > parseInt(b) ? 1 : -1;
+              }
+              return parseInt(a) > parseInt(b) ? 1 : -1;
+            },
             Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
           },
           {
             Header: 'الإسم',
-            accessor: 'owname' // String-based value accessors!
+            accessor: 'owname', // String-based value accessors!
+            filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+            filterAll: true,
           },
           {
             Header: 'الرقم',
@@ -1137,7 +1166,10 @@ class App extends React.Component {
         pageText="صفحة"
         filterable
         minRows={3}
-        defaultPageSize={10}
+        defaultPageSize={20}
+        style={{
+          height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+        }}
         className="-striped -highlight"
         /></div>)};
 
@@ -1151,15 +1183,23 @@ class App extends React.Component {
               columns={[
                 {
                   Header: 'الإشاري',
-                  accessor: 'id'
+                  accessor: 'id',
+                  sortMethod: (a, b) => {
+                    if (a === b) {
+                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                    }
+                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                  },
                 },
                 {
                   Header: 'إشاري البطاقة',
-                  accessor: 'card_id' 
+                  accessor: 'card_id',
+                  Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
                 }, 
                 {
                   Header: 'إشاري الساحب',
-                  accessor: 'runner_id'
+                  accessor: 'runner_id', // String-based value accessors!
+                  Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
                 },
                 {
                   Header: 'فاعل؟',
@@ -1168,7 +1208,9 @@ class App extends React.Component {
                 },
                 {
                   Header: 'تاريخ الإضافة',
-                  accessor: 'created'
+                  accessor: 'created',
+                  filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["created"] }),
+                  filterAll: true,
                 }
                 ]}
               data={data}
@@ -1241,7 +1283,8 @@ class App extends React.Component {
                 data: [],
                 data2: [],
                 pages: null,
-                loading: true
+                loading: true,
+                tot_bal: 0,
               },
               card:{
                 data: [],
@@ -1490,6 +1533,7 @@ class App extends React.Component {
             NotificationManager.warning("يتم تسجيل سحب للزبون","أرجوا الإنتظار");
             let id = e.target.customer_id.value;
             let amount = e.target.amount.value;
+            let caid = e.target.card_id.value;
             var form = new FormData(e.target);
             form.set('customerWithdraw','1');
             fetch(url,{
@@ -1501,7 +1545,7 @@ class App extends React.Component {
               if(reso === "Success"){
                 this.closeto();
                 NotificationManager.success("تم تسجيل سحب للزبون","نجاح");
-                window.location.replace(`/build/admin/customertransaction/${id}/${amount}`);
+                window.location.replace(`/build/admin/customertransaction/${id}/${amount}/${caid}`);
               }
               else{
                 this.closeto();
@@ -1593,7 +1637,14 @@ class App extends React.Component {
               .then(data => {
                 var data2=data[1];
                 data = data[0];
-                this.setState({customer:{data,data2,loading:false}});
+                var tot_bal = 0.0 ;
+                data2.map((row,index)=>{
+                  if(!isNaN(row.act_bal) && row.act_bal!==null)
+                  {
+                    tot_bal = parseFloat(tot_bal)+parseFloat(row.act_bal);
+                  }
+                });
+                this.setState({customer:{data,data2,loading:false,tot_bal}});
               })
           }
 
@@ -1633,10 +1684,28 @@ class App extends React.Component {
             this.getCustomerUser();
           }
           render(){
-            const { data , data2 , loading} = this.state.customer;
+            const { data , data2 , loading , tot_bal } = this.state.customer;
             const  banks  = this.state.bank.data;
             const { id } = this.props.match.params;
             var last_customer=[];
+
+            function humanizeWhereis(raw){
+              switch(raw){
+                case "Runner":
+                  raw="لدى الساحب";
+                  break;
+                case "Company":
+                  raw="لدى الشركة";
+                  break;
+                case "Customer":
+                  raw="لدى الزبون";
+                  break;
+                case "Queue":
+                  raw="فالطريق";
+                  break;
+              }
+              return raw;
+            }
 
             try{
               var customer;
@@ -1650,8 +1719,9 @@ class App extends React.Component {
                       <tr><td>الإسم:</td><td>{customer.name}</td></tr>
                       <tr><td>عددالبطاقات:</td><td>{customer.cards}</td></tr>
                       <tr><td>إجمالي التسليمات:</td><td>{customer.tots_withdrawn}</td></tr>
+                      <tr><td>إجمالي الأرصدة:</td><td>{tot_bal}</td></tr>
                       <tr><td>الهاتف:</td><td>{customer.phone}</td></tr>
-                      <tr><td>إشاري البطاقة:</td><td>{customer.cards_id}</td></tr>
+                      <tr><td>البطاقات:</td><td>{customer.cards_id}</td></tr>
                       <tr><td>تاريخ التسجيل :</td><td>{customer.created}</td></tr>
                     </tbody>
                   </Table>
@@ -1703,12 +1773,20 @@ class App extends React.Component {
                       id : 'id',
                       Header : 'الإشاري',
                       accessor : 'id',
+                      sortMethod: (a, b) => {
+                        if (a === b) {
+                          return parseInt(a) > parseInt(b) ? 1 : -1;
+                        }
+                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                      },
                       Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
                     },
                     {
                       id : 'owname',
                       Header : 'إسم صاحب البطاقة',
-                      accessor : 'owname'
+                      accessor : 'owname',
+                      filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+                      filterAll: true,
                     },{
                       id : 'act_bal',
                       Header : 'الرصيد الفعلي',
@@ -1720,7 +1798,12 @@ class App extends React.Component {
                     },{
                       id : 'whereis',
                       Header : 'مكان البطاقة',
-                      accessor : 'whereis'
+                      accessor : 'whereis',
+                      Cell: props => <span>{humanizeWhereis(props.value)}</span>
+                    },{
+                      id : 'state',
+                      Header : 'حالة البطاقة',
+                      accessor : 'state'
                     }
                   ]
                 }
@@ -1963,12 +2046,20 @@ class App extends React.Component {
                     id : 'id',
                     Header : 'الإشاري',
                     accessor : 'id',
+                    sortMethod: (a, b) => {
+                      if (a === b) {
+                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                      }
+                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                    },
                     Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
                   },
                   {
                     id : 'owname',
                     Header : 'إسم صاحب البطاقة',
-                    accessor : 'owname'
+                    accessor : 'owname',
+                    filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+                    filterAll: true,
                   }
                 ]
               }
@@ -2150,12 +2241,29 @@ class App extends React.Component {
               const {data} = this.state.card;
               const banks = this.state.bank.data;
 
-              
+              function humanizeWhereis(raw){
+                switch(raw){
+                  case "Runner":
+                    raw="لدى الساحب";
+                    break;
+                  case "Company":
+                    raw="لدى الشركة";
+                    break;
+                  case "Customer":
+                    raw="لدى الزبون";
+                    break;
+                  case "Queue":
+                    raw="فالطريق";
+                    break;
+                }
+                return raw;
+              }
                 //setInterval(this.getCardData(id),300);
                 // setTimeout(() => (this.getCardData(id),300));
-                const cards = data.map((card,index) => (
+                var card=data;
+                const cards =  (
                   <div>
-                  <Table key={index} striped bordered hover responsive>
+                  <Table striped bordered hover responsive>
                     <tbody>
                       <tr><td>الإشاري:</td><td>{card.id}</td></tr>
                       <tr><td>الإسم:</td><td>{card.owname}</td></tr>
@@ -2163,13 +2271,16 @@ class App extends React.Component {
                       <tr><td>المصرف:</td><td>{card.bank}</td></tr>
                       <tr><td>الصلاحية:</td><td>{card.exp}</td></tr>
                       <tr><td>الحالة:</td><td>{card.state}</td></tr>
-                      <tr><td>أين؟:</td><td>{card.whereis}</td></tr>
+                      <tr><td>أين؟:</td><td>{humanizeWhereis(card.whereis)}</td></tr>
+                      <tr><td>إسم و رقم الساحب (إذا كانت لدى ساحب):</td><td>{card.runner_name},<Link to={`/build/admin/runner/${card.runner_id}`}>{card.runner_id}</Link></td></tr>
                       <tr><td>الرصيد:</td><td>{card.credit}</td></tr>
                       <tr><td>المسحوب:</td><td>{card.drawn}</td></tr>
                       <tr><td>الرقم:</td><td>{card.card_number}</td></tr>
                       <tr><td>الكود:</td><td>{card.card_code}</td></tr>
                       <tr><td>عمولة حسب المصرف:</td><td>{card.fee_type=="true"?"نعم":"ﻻ"}</td></tr>
                       <tr><td>تم دفع العمولة؟:</td><td>{card.fee_paid==1?"نعم":"ﻻ"}</td></tr>
+                      <tr><td>إسم و رقم حساب الزبون:</td><td>{card.account_name},<Link to={`/build/admin/customer/${card.account_id}`}>{card.account_id}</Link></td></tr>
+                      <tr><td>تاريخ الإضافه:</td><td>{card.created}</td></tr>
                       <tr><td><Button className="btn btn-warning" onClick={this.open}>تعديل</Button></td><td></td></tr>
                     </tbody>
                   </Table>
@@ -2224,7 +2335,7 @@ class App extends React.Component {
                   </div>
                 </Modal>
                 </div>
-                ));
+                );
 
                 return(
                 <div>
@@ -2299,12 +2410,20 @@ class App extends React.Component {
             {
               Header : 'الإشاري',
               accessor : 'id',
+              sortMethod: (a, b) => {
+                if (a === b) {
+                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                }
+                return parseInt(a) > parseInt(b) ? 1 : -1;
+              },
               Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span> // Custom cell components!
             },
             {
               id : 'name',
               Header : 'الإسم',
-              accessor : 'name'
+              accessor : 'name',
+              filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["name"] }),
+              filterAll: true,
             },
             {
               id : 'phone',
@@ -2339,51 +2458,7 @@ class App extends React.Component {
         
         const sendCard = () => {
           const { runners, cards4send , loading} = this.state.sendCard;
-          // const sendIt = (e) => {
-          //   e.preventDefault();
-          //   this.sendCard2Runner(160,this.state.selectedRunner)
-          // };
-
-          // const execSend = (e) => {
-          //   e.preventDefault();
-          // }
-
-          // const handleCheckbox = (checkbox,id) => {
-          //     console.log("ahhh");
-          //     if(checkbox.checked){
-          //     this.selectCard4send(id);
-          //   }
-          //   if(checkbox.checked === false){
-          //     console.log("woooh");
-          //     this.removeCard4send(id);
-          //   }
-          // }
-          // const data = cards4send;
-          // const { toggleSelection, toggleAll, isSelected, logSelection } = this;
           const { selectAll } = this.state.sendCard;
-          // const { columns } = this.state;
-          // const checkboxProps = {
-          //   selectAll,
-          //   isSelected,
-          //   toggleSelection,
-          //   toggleAll,
-          //   selectType: "checkbox",
-          //   getTrProps: (s, r) => {
-          //     // someone asked for an example of a background color change
-          //     // here it is...
-          //     if(typeof(r) !== 'undefined'){
-          //       const selected = this.isSelected(r.original._id);
-          //         return {
-          //           style: {
-          //             backgroundColor: selected ? "lightblue" : "inherit"
-          //             // color: selected ? 'white' : 'inherit',
-          //           }
-          //         };
-          //     }else{
-          //       return {};
-          //     }
-          //   }
-          // };
           this.fetchCards4Send();
           
           const tbl_cards4send = (
@@ -2437,38 +2512,81 @@ class App extends React.Component {
               <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
                 <h5>إرسال بطاقات</h5>
               </Well>
-              {tbl_cards4send}
-              {/* <CheckboxTable
-                ref={r => (this.checkboxTable = r)}
-                onFetchData = {this.fetchCards4Send}
-                data={data}
-                columns={getColumns(data)}
-                // columns={[
-                //   {
-                //     Header: 'ID',
-                //     accessor: 'id',
-                //     Cell: props => <span className='number'><Link to={`/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
-                //   },
-                //   {
-                //     Header: 'Owner Name',
-                //     accessor: 'owname'
-                //   }
-                // ]}
-                defaultPageSize={10}
+              {/* {tbl_cards4send} */}
+              <ReactTable
+                columns={[
+                  {
+                    Header: 'الإشاري',
+                    accessor: 'id',
+                    id: 'id',
+                    sortMethod: (a, b) => {
+                      if (a === b) {
+                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                      }
+                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                    },
+                    Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                  },
+                  {
+                    Header: 'إسم صاحب البطاقة',
+                    accessor: 'owname', // String-based value accessors!
+                    filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+                    filterAll: true,
+                  },
+                  {
+                    Header: 'الحالة',
+                    accessor: 'state', // String-based value accessors!
+                    filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["state"] }),
+                    filterAll: true,
+                  }, {
+                    Header: 'الساحب',
+                    Cell: <select 
+                              onChange={this.handleSelectRunnerChange} 
+                              required
+                              placeholder="الساحب"
+                              ref={ref => {
+                                this._select = ref
+                              }}
+                              
+                              value={this.state.selectedRunner}
+                              // defaultValue={this.state.selectedRunner}
+                              >
+                                {
+                                  runners.map((runner,index) => (
+                                    <option value={runner.id} key={"opt_runner_"+index}>{runner.name}</option>
+                                  ))
+                                }
+                          </select>
+                  }, {
+                    accessor: 'id',
+                    Header: 'إرسال',
+                    Cell: props=><Button className="btn btn-link" onClick={() => this.executeSendCard(props.value)}>أرسل</Button>
+                  }
+                  ]}
+                defaultSorted={[
+                  {
+                    id: "id",
+                    desc: false
+                  }
+                ]}
                 className="-striped -highlight"
-                {...checkboxProps}
-              /> */}
-        
-              <div>
-              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
-                {/* <form onSubmit={this.executeSendCard}>
-                    {
-                      opt_runners
-                    }
-                  <Button className="btn btn-info" type="submit">Submit</Button>
-                </form> */}
-              </Well>
-            </div>
+                data={cards4send}
+                //pages={pages} // Display the total number of pages
+                loading={loading} // Display the loading overlay when we need it
+                onFetchData={this.fetchCards4Send} // Request new data when things change
+                noDataText="ﻻ توجد بيانات مطابقة !"
+                loadingText="جاري التحميل"
+                nextText="التالي"
+                previousText="السابق"
+                rowsText="صفوف"
+                pageText="صفحة"
+                filterable
+                minRows={3}
+                defaultPageSize={20}
+                  style={{
+                    height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+                  }}
+                />
             </div>
           )
         }
@@ -2697,12 +2815,371 @@ class App extends React.Component {
                             <tr style={{backgroundColor:'#38579e',color:'#FFFFFF',fontWeight:'bold'}}><td>المودع طوال الوقت</td><td>{runner.depoe}</td></tr>
                             <tr style={{backgroundColor:'#2b4070',color:'#FFFFFF',fontWeight:'bold'}}><td>المودع هذا الشهر</td><td>{runner.depoe_month}</td></tr>
                             <tr><td>عدد البطاقات لديه</td><td>{runner.cards_with}</td></tr>
+                            <tr><td>إجمالي البطاقات التي إستلمها</td><td>{runner.old_cards}</td></tr>
+                            <tr><td>إجمالي المسحوب لدى البطاقات التي إستلمها(خانة المسحوب لدى البطاقة)ـ</td><td>{runner.all_cards_withdrawn}</td></tr>
+                            <tr style={{backgroundColor:'#bfc657',color:'#FFFFFF',fontWeight:'bold'}}><td>إجمالي البطاقات التي اخذ منها عمولة</td><td>{runner.fee_cards_count}</td></tr>
+                            <tr><td>إجمالي المسحوب لدى البطاقات التي اخذ منها عمولة(خانة المسحوب لدى البطاقة)ـ</td><td>{runner.fee_cards_withdrawn}</td></tr>
+                            <tr style={{backgroundColor:'#bfc657',color:'#FFFFFF',fontWeight:'bold'}}><td>إجمالي المسحوب لدى البطاقات التي اخذ منها عمولة(المسحوب في معاملات البطاقة)ـ</td><td>{runner.fee_cards_withdrawn_real}</td></tr>
+                            <tr><td>إجمالي البطاقات التي أرسلها</td><td>{runner.all_sents}</td></tr>
                             {/* <tr><td>المسحوب</td><td>{runner.drawn}</td></tr>
                             <tr><td>المودع</td><td>{runner.diposited}</td></tr> */}
                             {/* <tr><td>بطاقات مع</td><td></td></tr>
                             <tr><td>بطاقات فالطريق منه</td><td></td></tr>
                             <tr><td>بطاقات فالطريق اليه</td><td></td></tr> */}
                             <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
+                            <tr><td colSpan={2}>
+                              <h6><b>جميع البطاقات التي إستلمها فالسابق</b></h6>
+                              <ReactTable
+                                columns={[
+                                  {
+                                    Header: 'الإشاري',
+                                    accessor: 'id',
+                                    sortMethod: (a, b) => {
+                                      if (a === b) {
+                                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                                      }
+                                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                                    },
+                                    Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                                  },
+                                  {
+                                    Header: 'الإسم',
+                                    accessor: 'owname', // String-based value accessors!
+                                    filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+                                    filterAll: true,
+                                  },
+                                  {
+                                    Header: 'الرقم',
+                                    accessor: 'card_number'
+                                  },
+                                  {
+                                    Header: 'الكود',
+                                    accessor: 'card_code'
+                                  },
+                                  {
+                                    Header: 'النوع',
+                                    accessor: 'type',
+                                    id: 'type'
+                                  },
+                                  {
+                                    id: 'exp', // Required because our accessor is not a string
+                                    Header: 'الصلاحية',
+                                    accessor: 'exp',
+                                    Cell: props => <span className='number'>{props.value}</span> // Custom cell components!
+                                  },
+                                  {
+                                    Header: 'الحالة',
+                                    accessor: 'state',
+                                    id: 'state'
+                                  },
+                                  {
+                                    Header: 'المصرف',
+                                    accessor: 'bank',
+                                    id: 'bank'
+                                  },
+                                  {
+                                    Header: 'الرصيد',
+                                    accessor: 'credit',
+                                    id: 'credit'
+                                  },
+                                  {
+                                    Header: 'المسحوب',
+                                    accessor: 'drawn',
+                                    id: 'drawn'
+                                  },
+                                  {
+                                    Header: 'المتبقي',
+                                    accessor: 'avail',
+                                    id: 'avail'
+                                  },
+                                  {
+                                    Header: 'العمولة',
+                                    accessor: 'fee_type',
+                                    id: 'fee_type',
+                                    Cell: props => <span>{props.value != null ? (props.value.localeCompare("true")==0?"مصرف":"شركة") : "شركة"}</span>,
+                                    filterMethod: (filter, row) => {
+                                      if (filter.value === "all") {
+                                        return true;
+                                      }
+                                      if (filter.value === "true") {
+                                        return row[filter.id] == "true";
+                                      }
+                                      return row[filter.id] != "true";
+                                    },
+                                    Filter: ({ filter, onChange }) =>
+                                      <select
+                                        onChange={event => onChange(event.target.value)}
+                                        style={{ width: "100%" }}
+                                        value={filter ? filter.value : "all"}
+                                      >
+                                        <option value="all">الكل</option>
+                                        <option value="true">مصرف(10الاف)</option>
+                                        <option value="NULL">شركة(ارباب الاسر)</option>
+                                      </select>
+                                  }
+                                  ]}
+                                defaultSorted={[
+                                  {
+                                    id: "id",
+                                    desc: true
+                                  }
+                                ]}
+                                className="-striped -highlight"
+                                data={runner.all_cards}
+                                //pages={pages} // Display the total number of pages
+                                // loading={loading} // Display the loading overlay when we need it
+                                // onFetchData={this.fetchCustomerData} // Request new data when things change
+                                noDataText="ﻻ توجد بيانات مطابقة !"
+                                loadingText="جاري التحميل"
+                                nextText="التالي"
+                                previousText="السابق"
+                                rowsText="صفوف"
+                                pageText="صفحة"
+                                filterable
+                                minRows={3}
+                                defaultPageSize={10}
+                                  // style={{
+                                  //   height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+                                  // }}
+                                />
+                              </td></tr>
+                              <tr><td colSpan={2}>
+                              <h6><b>جميع البطاقات التي لديه الآن</b></h6>
+                              <ReactTable
+                                columns={[
+                                  {
+                                    Header: 'الإشاري',
+                                    accessor: 'id',
+                                    sortMethod: (a, b) => {
+                                      if (a === b) {
+                                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                                      }
+                                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                                    },
+                                    Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
+                                  },
+                                  {
+                                    Header: 'الإسم',
+                                    accessor: 'owname', // String-based value accessors!
+                                    filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["owname"] }),
+                                    filterAll: true,
+                                  },
+                                  {
+                                    Header: 'الرقم',
+                                    accessor: 'card_number'
+                                  },
+                                  {
+                                    Header: 'الكود',
+                                    accessor: 'card_code'
+                                  },
+                                  {
+                                    Header: 'النوع',
+                                    accessor: 'type',
+                                    id: 'type'
+                                  },
+                                  {
+                                    id: 'exp', // Required because our accessor is not a string
+                                    Header: 'الصلاحية',
+                                    accessor: 'exp',
+                                    Cell: props => <span className='number'>{props.value}</span> // Custom cell components!
+                                  },
+                                  {
+                                    Header: 'الحالة',
+                                    accessor: 'state',
+                                    id: 'state'
+                                  },
+                                  {
+                                    Header: 'المصرف',
+                                    accessor: 'bank',
+                                    id: 'bank'
+                                  },
+                                  {
+                                    Header: 'الرصيد',
+                                    accessor: 'credit',
+                                    id: 'credit'
+                                  },
+                                  {
+                                    Header: 'المسحوب',
+                                    accessor: 'drawn',
+                                    id: 'drawn'
+                                  },
+                                  {
+                                    Header: 'المتبقي',
+                                    accessor: 'avail',
+                                    id: 'avail'
+                                  },
+                                  {
+                                    Header: 'العمولة',
+                                    accessor: 'fee_type',
+                                    id: 'fee_type',
+                                    Cell: props => <span>{props.value != null ? (props.value.localeCompare("true")==0?"مصرف":"شركة") : "شركة"}</span>,
+                                    filterMethod: (filter, row) => {
+                                      if (filter.value === "all") {
+                                        return true;
+                                      }
+                                      if (filter.value === "true") {
+                                        return row[filter.id] == "true";
+                                      }
+                                      return row[filter.id] != "true";
+                                    },
+                                    Filter: ({ filter, onChange }) =>
+                                      <select
+                                        onChange={event => onChange(event.target.value)}
+                                        style={{ width: "100%" }}
+                                        value={filter ? filter.value : "all"}
+                                      >
+                                        <option value="all">الكل</option>
+                                        <option value="true">مصرف(10الاف)</option>
+                                        <option value="NULL">شركة(ارباب الاسر)</option>
+                                      </select>
+                                  }
+                                  ]}
+                                defaultSorted={[
+                                  {
+                                    id: "id",
+                                    desc: true
+                                  }
+                                ]}
+                                className="-striped -highlight"
+                                data={runner.cards_now}
+                                //pages={pages} // Display the total number of pages
+                                // loading={loading} // Display the loading overlay when we need it
+                                // onFetchData={this.fetchCustomerData} // Request new data when things change
+                                noDataText="ﻻ توجد بيانات مطابقة !"
+                                loadingText="جاري التحميل"
+                                nextText="التالي"
+                                previousText="السابق"
+                                rowsText="صفوف"
+                                pageText="صفحة"
+                                filterable
+                                minRows={3}
+                                defaultPageSize={10}
+                                  // style={{
+                                  //   height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+                                  // }}
+                                />
+                              </td></tr>
+                              <tr><td colSpan={2}>
+                                <h6><b>آخر خمسين حركه دين له</b></h6>
+                                <ReactTable
+                                  columns={[
+                                    {
+                                      Header: 'الإشاري',
+                                      accessor: 'id',
+                                      sortMethod: (a, b) => {
+                                        if (a === b) {
+                                          return parseInt(a) > parseInt(b) ? 1 : -1;
+                                        }
+                                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                                      },
+                                    },
+                                    {
+                                      Header: 'إشاري الساحب',
+                                      accessor: 'runner_id', // String-based value accessors!
+                                      Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                                    }, {
+                                      Header: 'القيمة',
+                                      accessor: 'amount',
+                                      id: 'amount',
+                                      Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                                    },{
+                                      Header: 'النوع',
+                                      accessor: 'type', // String-based value accessors!
+                                      Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                    },{
+                                      Header: 'التاريخ',
+                                      accessor: 'date' // String-based value accessors!
+                                    },
+                                    ]}
+                                  defaultSorted={[
+                                    {
+                                      id: "id",
+                                      desc: true
+                                    }
+                                  ]}
+                                  style={{
+                                    height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+                                  }}
+                                  className="-striped -highlight"
+                                  data={runner.last_trans}
+                                  //pages={pages} // Display the total number of pages
+                                  // loading={rncloading} // Display the loading overlay when we need it
+                                  // onFetchData={this.getRunnerTransactionsCredits} // Request new data when things change
+                                  noDataText="ﻻ توجد بيانات مطابقة !"
+                                  loadingText="جاري التحميل"
+                                  nextText="التالي"
+                                  previousText="السابق"
+                                  rowsText="صفوف"
+                                  pageText="صفحة"
+                                  filterable
+                                  minRows={3}
+                                  defaultPageSize={10}
+                                />
+                              </td></tr>
+                              <tr><td colSpan={2}>
+                                <h6><b>آخر خمسين عموله له</b></h6>
+                                <ReactTable
+                                  columns={[
+                                    {
+                                      Header: 'الإشاري',
+                                      accessor: 'id',
+                                      sortMethod: (a, b) => {
+                                        if (a === b) {
+                                          return parseInt(a) > parseInt(b) ? 1 : -1;
+                                        }
+                                        return parseInt(a) > parseInt(b) ? 1 : -1;
+                                      },
+                                    },
+                                    {
+                                      Header: 'إشاري البطاقة',
+                                      accessor: 'card_id', // String-based value accessors!
+                                      Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                                    },{
+                                      Header: 'إشاري الساحب',
+                                      accessor: 'runner_id', // String-based value accessors!
+                                      Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                                    }, {
+                                      Header: 'القيمة',
+                                      accessor: 'amount',
+                                      id: 'amount',
+                                      Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                                    },{
+                                      Header: 'النوع',
+                                      accessor: 'type', // String-based value accessors!
+                                      Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                    },{
+                                      Header: 'السبب',
+                                      accessor: 'cause' // String-based value accessors!
+                                    },{
+                                      Header: 'التاريخ',
+                                      accessor: 'date' // String-based value accessors!
+                                    },
+                                    ]}
+                                  defaultSorted={[
+                                    {
+                                      id: "id",
+                                      desc: true
+                                    }
+                                  ]}
+                                  style={{
+                                    height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
+                                  }}
+                                  className="-striped -highlight"
+                                  data={runner.last_fees}
+                                  //pages={pages} // Display the total number of pages
+                                  // loading={rnloading} // Display the loading overlay when we need it
+                                  // onFetchData={this.getRunnerTransactions} // Request new data when things change
+                                  noDataText="ﻻ توجد بيانات مطابقة !"
+                                  loadingText="جاري التحميل"
+                                  nextText="التالي"
+                                  previousText="السابق"
+                                  rowsText="صفوف"
+                                  pageText="صفحة"
+                                  filterable
+                                  minRows={3}
+                                  defaultPageSize={10}
+                                />
+                              </td></tr>
                             <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td><Table><tr><td><Button className="btn btn-warning" onClick={this.opento}>تعديل</Button></td>
                             {this.state.runnerUserExist==true?
                               (<div><Button className="btn btn-danger" onClick={this.openfoor}>تغيير كلمة المرور</Button>
@@ -2949,15 +3426,25 @@ class App extends React.Component {
         columns={[
           {
             Header: 'الإشاري',
-            accessor: 'id'
+            accessor: 'id',
+            sortMethod: (a, b) => {
+              if (a === b) {
+                return parseInt(a) > parseInt(b) ? 1 : -1;
+              }
+              return parseInt(a) > parseInt(b) ? 1 : -1;
+            },
           },
           {
             Header: 'الوصف',
-            accessor: 'description' // String-based value accessors!
+            accessor: 'description', // String-based value accessors!
+            filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["description"] }),
+            filterAll: true,
           },
           {
             Header: 'التاريخ',
-            accessor: 'created'
+            accessor: 'created',
+            filterMethod: (filter, rows) => matchSorter(rows, filter.value, { keys: ["created"] }),
+            filterAll: true,
           }
           ]}
         data={data}
@@ -2989,6 +3476,7 @@ class App extends React.Component {
                   <tbody>
                     <tr><td dir="rtl">{this.props.customer.name}</td><td>إسم المستلم</td></tr>
                     <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
+                    <tr dir="rtl"><td>المصرف:{this.props.cardo.bank}</td><td>البطاقة:{this.props.cardo.id}</td></tr>
                     <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
                     
                     <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
@@ -3005,6 +3493,7 @@ class App extends React.Component {
                   <tbody>
                     <tr><td dir="rtl">{this.props.customer.name}</td><td>إسم المستلم</td></tr>
                     <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
+                    <tr dir="rtl"><td>المصرف:{this.props.cardo.bank}</td><td>البطاقة:{this.props.cardo.id}</td></tr>
                     <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
                     
                     <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
@@ -3027,11 +3516,15 @@ class App extends React.Component {
                 pages:null,
                 loading:true
               },
+              card:{
+                cdata:[],
+                loading:true
+              },
               date: '',
             }
             this.getDate = this.getDate.bind(this);
             this.getCustomerData = this.getCustomerData.bind(this);
-
+            this.getCardData = this.getCardData.bind(this);
           }
 
           getDate(){
@@ -3056,19 +3549,35 @@ class App extends React.Component {
               })
           }
 
+          getCardData(id) {
+            var formData = new FormData();
+            formData.append('transcard', '1');
+            formData.append('id', id);
+        
+            fetch(url,{
+              method: 'POST',
+              body: formData
+              })
+              .then(res => res.json())
+              .then(cdata => {
+                this.setState({card:{cdata,loading:false}});
+              })
+          }
+
           componentDidMount(){
             let id = this.props.match.params.id;
             this.getCustomerData(id);
+            this.getCardData(id);
           }
 
           render(){
             const { data } = this.state.customer;
+            const { cdata } = this.state.card;
             let id = this.props.match.params.id;
+            let card = this.props.match.params.card;
             let amount = this.props.match.params.amount;
             
             this.getDate();
-
-            
 
             return (
               <div>
@@ -3082,6 +3591,7 @@ class App extends React.Component {
                           <Receipt
                             ref={el => (this.componentRef = el)}
                             customer={customer}
+                            cardo = {cdata[0]||[]}
                             amount={amount}
                             date={this.state.date}
                           />
@@ -3098,6 +3608,13 @@ class App extends React.Component {
                             <tbody>
                               <tr><td dir="rtl">{customer.name}</td><td>إسم المستلم</td></tr>
                               <tr><td dir="rtl">{customer.phone}</td><td>رقم هاتفه</td></tr>
+                              {
+                                cdata.map((cardo,indexo)=>{
+                                  return(
+                                    <tr key={"card"+indexo} dir="rtl"><td>المصرف:{cardo.bank}</td><td>البطاقة:{cardo.id}</td></tr>
+                                  )
+                                })
+                              }
                               <tr><td dir="rtl"><b style={{border:'solid'}}>$ {amount}</b></td><td>المبلغ</td></tr>
                               
                               <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
@@ -3228,6 +3745,12 @@ class App extends React.Component {
               {
                 Header: 'الإشاري',
                 accessor: 'id',
+                sortMethod: (a, b) => {
+                  if (a === b) {
+                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                  }
+                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                },
                 Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span> // Custom cell components!
               },
               {
@@ -3266,56 +3789,119 @@ class App extends React.Component {
           }
         }
         
-
-        const Deposits = () => {
-          const { data , loading} = this.state.deposit;
-          return( <div>
-            <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
-              <h5>الأيداعات الغير مؤكدة</h5>
-            </Well>
-            <ReactTable
-            columns={[
-              {
-                Header: 'الإشاري',
-                accessor: 'id'
-              },
-              {
-                Header: 'إشاري الساحب',
-                accessor: 'runner_id'
-              },
-              {
-                Header: 'القيمة',
-                accessor: 'amount'
-              },
-              {
-                Header: 'الوصف',
-                accessor: 'description' // String-based value accessors!
-              },
-              {
-                Header: 'التاريخ',
-                accessor: 'date'
-              },
-              {
-                Header: 'تأكيد',
-                Cell: row => (<Button className="btn btn-link" onClick={() => this.verifyDeposit(row)}>تأكيد</Button>)
+        class Deposits extends React.Component{
+          constructor(props, context) {
+            super(props, context);
+            //this._formToPrint = React.createRef();
+            this.state = {
+              deposit:{
+                data: [],
+                pages: null,
+                loading: true
               }
-              ]}
-            data={data}
-            //pages={pages} // Display the total number of pages
-            loading={loading} // Display the loading overlay when we need it
-            onFetchData={()=>this.fetchDepositsData} // Request new data when things change
-            noDataText="ﻻ توجد بيانات مطابقة !"
-            loadingText="جاري التحميل"
-            nextText="التالي"
-            previousText="السابق"
-            rowsText="صفوف"
-            pageText="صفحة"
-            filterable
-            minRows={3}
-            defaultPageSize={10}
-            className="-striped -highlight"
-          /></div>)
-        }
+            }
+            this.fetchDepositsData = this.fetchDepositsData.bind(this);
+            this.verifyDeposit = this.verifyDeposit.bind(this);
+          }
+          verifyDeposit(row){
+            if(window.confirm("متأكد من تأكيد هذا الإيداع؟")){
+              NotificationManager.warning("يتم تأكيد الأيداع","الرجاء الإنتظار");
+              var form = new FormData();
+              form.set('verifyDeposit',1);
+              form.set('deposit_id', row.row.id);
+        
+              fetch(url,{
+                method: 'POST',
+                body:form
+              })
+              .then(res => res.text())
+              .then(reso => {
+                if(reso === "Success"){
+                  NotificationManager.success("تم تأكيد الإيداع","نجاح");
+                  this.fetchDepositsData();
+                }else{
+                  NotificationManager.error("لم يتم تأكيد الإيداع","خطأ");
+                }
+              })
+            }
+            
+          }
+        
+          fetchDepositsData(){
+            var form = new FormData();
+            form.set('getDeposits4v',1);
+        
+            fetch(url,{
+              method: 'POST',
+              body:form
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({deposit:{data:reso}});
+            })
+          }
+
+          componentDidMount(){
+            this.fetchDepositsData();
+          }
+          render(){
+            const { data , loading} = this.state.deposit;
+            return( <div>
+              <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
+                <h5>الأيداعات الغير مؤكدة</h5>
+              </Well>
+              <ReactTable
+              columns={[
+                {
+                  Header: 'الإشاري',
+                  accessor: 'id',
+                  sortMethod: (a, b) => {
+                    if (a === b) {
+                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                    }
+                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                  },
+                },
+                {
+                  Header: 'إشاري الساحب',
+                  accessor: 'runner_id', // String-based value accessors!
+                  Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                },
+                {
+                  Header: 'القيمة',
+                  accessor: 'amount'
+                },
+                {
+                  Header: 'الوصف',
+                  accessor: 'description' // String-based value accessors!
+                },
+                {
+                  Header: 'التاريخ',
+                  accessor: 'date'
+                },
+                {
+                  Header: 'تأكيد',
+                  Cell: row => (<Button className="btn btn-link" onClick={() => this.verifyDeposit(row)}>تأكيد</Button>)
+                }
+                ]}
+              data={data}
+              //pages={pages} // Display the total number of pages
+              loading={loading} // Display the loading overlay when we need it
+              onFetchData={this.fetchDepositsData} // Request new data when things change
+              noDataText="ﻻ توجد بيانات مطابقة !"
+              loadingText="جاري التحميل"
+              nextText="التالي"
+              previousText="السابق"
+              rowsText="صفوف"
+              pageText="صفحة"
+              filterable
+              minRows={3}
+              defaultPageSize={10}
+              className="-striped -highlight"
+            /></div>)
+          }
+        } 
+        
 
         const VDeposits = () => {
           const { data , loading} = this.state.vdeposit;
@@ -3327,11 +3913,18 @@ class App extends React.Component {
             columns={[
               {
                 Header: 'الإشاري',
-                accessor: 'id'
+                accessor: 'id',
+                sortMethod: (a, b) => {
+                  if (a === b) {
+                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                  }
+                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                },
               },
               {
                 Header: 'إشاري الساحب',
-                accessor: 'runner_id'
+                accessor: 'runner_id', // String-based value accessors!
+                Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
               },
               {
                 Header: 'القيمة',
@@ -3589,12 +4182,81 @@ class App extends React.Component {
                 rndata: [],
                 pages: null,
                 rnloading: true
-              }
+              },
+              runnertransactioncredit:{
+                rncdata: [],
+                pages: null,
+                rncloading: true
+              },
+              redirect: false,
+              redirectTo: "",
             }
             this.getCustomerTransactions = this.getCustomerTransactions.bind(this);
             this.getCardTransactions = this.getCardTransactions.bind(this);
             this.getRunnerTransactions = this.getRunnerTransactions.bind(this);
+            this.getRunnerTransactionsCredits = this.getRunnerTransactionsCredits.bind(this);
             this.getHouseTransactions = this.getHouseTransactions.bind(this);
+            this.editWithdraw = this.editWithdraw.bind(this);
+            this.reprint = this.reprint.bind(this);
+            this.handleEditRunnerCredit = this.handleEditRunnerCredit.bind(this);
+          }
+          handleEditRunnerCredit(row){
+            let form = new FormData();
+            form.append('editRunnerCredit','1');
+            form.append('runnerCredId',row.row.id);
+            form.append('newAmount',window.prompt("سيقوم النظام بتعديل القيم المناسبه في جميع الحقول المتأثرة \nالرجاء إدخال القيمه الجديده للمعاملة "+row.row.id));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.getRunnerTransactionsCredits();
+              this.getCardTransactions();
+              this.getHouseTransactions();
+            })
+          }
+          reprint(row){
+            window.location.replace(`/build/admin/customertransaction/${row.row.account_id}/${row.row.amount}/${row.row.card_id}`);
+          }
+          editWithdraw(row){
+            let form = new FormData();
+            form.append('editCustomerWithdraw','1');
+            form.append('customertransaction_id', row.row.id);
+            form.append('amount',window.prompt("الرجاء إدخال القيمة الجديدة"));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.getCustomerTransactions();
+              this.getCardTransactions();
+            })
+          }
+          getRunnerTransactionsCredits(state, instance){
+            let form = new FormData();
+            form.append('getRunnerTransactionsCredits','1');
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.json())
+            .then(reso => {
+              this.setState({runnertransactioncredit:{rncdata:reso,rncloading:false}});
+            })
           }
           getHouseTransactions(state, instance){
             let form = new FormData();
@@ -3617,7 +4279,7 @@ class App extends React.Component {
             })
             .then(res => res.json())
             .then(reso => {
-              this.setState({runnertransaction:{rndata:reso,crloading:false}});
+              this.setState({runnertransaction:{rndata:reso,rnloading:false}});
             })
           }
           getCardTransactions(state, instance){
@@ -3648,12 +4310,14 @@ class App extends React.Component {
             this.getCustomerTransactions();
             this.getCardTransactions();
             this.getRunnerTransactions();
+            this.getRunnerTransactionsCredits();
             this.getHouseTransactions();
           }
           render(){
             const {data,loading} = this.state.customertransaction;
             const {crdata,crloading} = this.state.cardtransaction;
             const {rndata,rnloading} = this.state.runnertransaction;
+            const {rncdata,rncloading} = this.state.runnertransactioncredit;
             const {hsdata,hsloading} = this.state.housetransaction;
 
             return(
@@ -3667,13 +4331,24 @@ class App extends React.Component {
                           columns={[
                             {
                               Header: 'الإشاري',
-                              accessor: 'id'
+                              accessor: 'id',
+                              sortMethod: (a, b) => {
+                                if (a === b) {
+                                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                                }
+                                return parseInt(a) > parseInt(b) ? 1 : -1;
+                              },
                             },
                             {
                               Header: 'إشاري البطاقة',
                               accessor: 'card_id', // String-based value accessors!
                               Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
-                            }, {
+                            },
+                            {
+                              Header: 'رقم الحساب',
+                              accessor: 'account_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/customer/${props.value}`}>{props.value}</Link></span>
+                            },{
                               Header: 'القيمة',
                               accessor: 'amount',
                               id: 'amount',
@@ -3690,7 +4365,11 @@ class App extends React.Component {
                               accessor: 'date' // String-based value accessors!
                             },{
                               Header: 'تعديل',
-                              Cell: row => (<Button className="btn btn-link" onClick={() => alert("هذه الخدمه غير متوفرة حاليا")}>تعديل</Button>)
+                              Cell: row => (<Button className="btn btn-link" onClick={() => this.editWithdraw(row)}>تعديل</Button>)
+                            }
+                            ,{
+                              Header: 'طباعة',
+                              Cell: row => (<Button className="btn btn-link" onClick={() => this.reprint(row)}>طباعة</Button>)
                             }
                             ]}
                           className="-striped -highlight"
@@ -3714,7 +4393,13 @@ class App extends React.Component {
                           columns={[
                             {
                               Header: 'الإشاري',
-                              accessor: 'id'
+                              accessor: 'id',
+                              sortMethod: (a, b) => {
+                                if (a === b) {
+                                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                                }
+                                return parseInt(a) > parseInt(b) ? 1 : -1;
+                              },
                             },
                             {
                               Header: 'إشاري البطاقة',
@@ -3741,7 +4426,7 @@ class App extends React.Component {
                           data={crdata}
                           //pages={pages} // Display the total number of pages
                           loading={crloading} // Display the loading overlay when we need it
-                          onFetchData={()=>this.getCardTransactions} // Request new data when things change
+                          onFetchData={this.getCardTransactions} // Request new data when things change
                           noDataText="ﻻ توجد بيانات مطابقة !"
                           loadingText="جاري التحميل"
                           nextText="التالي"
@@ -3754,55 +4439,127 @@ class App extends React.Component {
                         />
                   </Tab>
                   <Tab eventKey="contact" title="الساحبين">
-                  <ReactTable
-                          columns={[
-                            {
-                              Header: 'الإشاري',
-                              accessor: 'id'
-                            },
-                            {
-                              Header: 'إشاري البطاقة',
-                              accessor: 'card_id', // String-based value accessors!
-                              Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
-                            }, {
-                              Header: 'القيمة',
-                              accessor: 'amount',
-                              id: 'amount',
-                              Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
-                            },{
-                              Header: 'النوع',
-                              accessor: 'type', // String-based value accessors!
-                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
-                            },{
-                              Header: 'السبب',
-                              accessor: 'cause' // String-based value accessors!
-                            },{
-                              Header: 'التاريخ',
-                              accessor: 'date' // String-based value accessors!
-                            },
-                            ]}
-                          className="-striped -highlight"
-                          data={rndata}
-                          //pages={pages} // Display the total number of pages
-                          loading={rnloading} // Display the loading overlay when we need it
-                          onFetchData={()=>this.getRunnerTransactions} // Request new data when things change
-                          noDataText="ﻻ توجد بيانات مطابقة !"
-                          loadingText="جاري التحميل"
-                          nextText="التالي"
-                          previousText="السابق"
-                          rowsText="صفوف"
-                          pageText="صفحة"
-                          filterable
-                          minRows={3}
-                          defaultPageSize={10}
-                        />
+                    <Tabs defaultActiveKey="fees" transition={false} id="noanim-tab-example">
+                      <Tab eventKey="fees" title="العمولات">
+                        <ReactTable
+                            columns={[
+                              {
+                                Header: 'الإشاري',
+                                accessor: 'id',
+                                sortMethod: (a, b) => {
+                                  if (a === b) {
+                                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                                  }
+                                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                                },
+                              },
+                              {
+                                Header: 'إشاري البطاقة',
+                                accessor: 'card_id', // String-based value accessors!
+                                Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                              },{
+                                Header: 'إشاري الساحب',
+                                accessor: 'runner_id', // String-based value accessors!
+                                Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                              }, {
+                                Header: 'القيمة',
+                                accessor: 'amount',
+                                id: 'amount',
+                                Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                              },{
+                                Header: 'النوع',
+                                accessor: 'type', // String-based value accessors!
+                                Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                              },{
+                                Header: 'السبب',
+                                accessor: 'cause' // String-based value accessors!
+                              },{
+                                Header: 'التاريخ',
+                                accessor: 'date' // String-based value accessors!
+                              },
+                              ]}
+                            className="-striped -highlight"
+                            data={rndata}
+                            //pages={pages} // Display the total number of pages
+                            loading={rnloading} // Display the loading overlay when we need it
+                            onFetchData={this.getRunnerTransactions} // Request new data when things change
+                            noDataText="ﻻ توجد بيانات مطابقة !"
+                            loadingText="جاري التحميل"
+                            nextText="التالي"
+                            previousText="السابق"
+                            rowsText="صفوف"
+                            pageText="صفحة"
+                            filterable
+                            minRows={3}
+                            defaultPageSize={10}
+                          />
+                      </Tab>
+                      <Tab eventKey="credits" title="السحب و الديون">
+                        <ReactTable
+                              columns={[
+                                {
+                                  Header: 'الإشاري',
+                                  accessor: 'id',
+                                  sortMethod: (a, b) => {
+                                    if (a === b) {
+                                      return parseInt(a) > parseInt(b) ? 1 : -1;
+                                    }
+                                    return parseInt(a) > parseInt(b) ? 1 : -1;
+                                  },
+                                },
+                                {
+                                  Header: 'إشاري الساحب',
+                                  accessor: 'runner_id', // String-based value accessors!
+                                  Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                                }, {
+                                  Header: 'القيمة',
+                                  accessor: 'amount',
+                                  id: 'amount',
+                                  Cell: props => <span className='number'>{props.value != null ? props.value : "0"}</span> // Custom cell components!
+                                },{
+                                  Header: 'النوع',
+                                  accessor: 'type', // String-based value accessors!
+                                  Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                },{
+                                  Header: 'التاريخ',
+                                  accessor: 'date' // String-based value accessors!
+                                },{
+                                  Header: 'تعديل',
+                                  Cell: row=><Button onClick={()=>this.handleEditRunnerCredit(row)}>تعديل</Button>
+                                }
+                                ]}
+                              className="-striped -highlight"
+                              data={rncdata}
+                              //pages={pages} // Display the total number of pages
+                              loading={rncloading} // Display the loading overlay when we need it
+                              onFetchData={this.getRunnerTransactionsCredits} // Request new data when things change
+                              noDataText="ﻻ توجد بيانات مطابقة !"
+                              loadingText="جاري التحميل"
+                              nextText="التالي"
+                              previousText="السابق"
+                              rowsText="صفوف"
+                              pageText="صفحة"
+                              filterable
+                              minRows={3}
+                              defaultPageSize={10}
+                            />
+                      </Tab>
+                    </Tabs>
+                  
+                  
                   </Tab>
                   <Tab eventKey="contactus" title="الشركة">
                   <ReactTable
                           columns={[
                             {
                               Header: 'الإشاري',
-                              accessor: 'id'
+                              accessor: 'id',
+                              sortMethod: (a, b) => {
+                                if (a === b) {
+                                  return parseInt(a) > parseInt(b) ? 1 : -1;
+                                }
+                                return parseInt(a) > parseInt(b) ? 1 : -1;
+                              },
                             },
                             {
                               Header: 'إشاري البطاقة',
@@ -3829,7 +4586,7 @@ class App extends React.Component {
                           data={hsdata}
                           //pages={pages} // Display the total number of pages
                           loading={hsloading} // Display the loading overlay when we need it
-                          onFetchData={()=>this.getHouseTransactions} // Request new data when things change
+                          onFetchData={this.getHouseTransactions} // Request new data when things change
                           noDataText="ﻻ توجد بيانات مطابقة !"
                           loadingText="جاري التحميل"
                           nextText="التالي"
@@ -3981,10 +4738,10 @@ class App extends React.Component {
             <Route path="/build/admin/logs" render={Logs}/>
             <Route path="/build/admin/users" render={Users}/>
             <Route path="/build/admin/customer/:id" component={Custo} />
-            <Route path="/build/admin/customertransaction/:id/:amount" component={CustomerTransaction} />
+            <Route path="/build/admin/customertransaction/:id/:amount/:card" component={CustomerTransaction} />
             <Route path="/build/admin/card/:id" component={Card} />
             <Route path="/build/admin/settings" render={Settings} />
-            <Route path="/build/admin/deposits" render={Deposits} />
+            <Route path="/build/admin/deposits" component={Deposits} />
             <Route path="/build/admin/vdeposits" render={VDeposits} />
             <Route path="/build/admin/banks" render={pg_bank} />
             <Route path="/build/admin/addBank" render={pg_addBank} />

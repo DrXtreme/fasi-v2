@@ -11,6 +11,7 @@
     "create-react-class": "^15.6.3",
     "highcharts": "^7.0.2",
     "highcharts-react": "0.0.3",
+    "match-sorter": "^2.3.0",
     "mdbreact": "^4.11.0",
     "namor": "^1.1.1",
     "npm-install-peers": "^1.2.1",
