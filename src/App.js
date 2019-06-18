@@ -3566,8 +3566,9 @@ class App extends React.Component {
 
           componentDidMount(){
             let id = this.props.match.params.id;
+            let card = this.props.match.params.card;
             this.getCustomerData(id);
-            this.getCardData(id);
+            this.getCardData(card);
           }
 
           render(){
