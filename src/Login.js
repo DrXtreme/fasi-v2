@@ -9,7 +9,7 @@ class Login extends Component {
 
   constructor(){
     super();
-   
+
     this.state = {
      username: '',
      password: '',
@@ -21,14 +21,14 @@ class Login extends Component {
 
   }
 
-  
+
 
   login(e) {
     e.preventDefault();
     if(this.state.username && this.state.password){
       PostData('login',this.state).then((result) => {
        let responseJson = result;
-       if(responseJson.userData){         
+       if(responseJson.token){         
          sessionStorage.setItem('userData',JSON.stringify(responseJson));
          this.setState({redirectToReferrer: true});
          NotificationManager.success("تم الدخول بنجاح كمدير","نجاح");
@@ -36,18 +36,16 @@ class Login extends Component {
        }else{
          NotificationManager.error(responseJson.error.text,"خطأ");
        }
-       
       });
     }
-    
    }
 
   onChange(e){
     this.setState({[e.target.name]:e.target.value});
    }
 
-  
-  
+
+
 
   render() {
 

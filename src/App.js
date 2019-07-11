@@ -29,8 +29,8 @@ import { isNumber } from 'highcharts';
 import matchSorter from 'match-sorter';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-// const url = 'https://admin.fasicurrency.com/sbuild/';
-const url = 'https://admin.fasicurrency.com/sbuild/';
+// const url = 'http://localhost/api/';
+const url = 'http://localhost/api/';
 
 
 
@@ -41,20 +41,20 @@ let rand = ()=> (Math.floor(Math.random() * 20) - 10);
     zIndex: 1040,
     top: 0, bottom: 0, left: 0, right: 0
   };
-  
+
   const backdropStyle = {
     ...modalStyle,
     zIndex: 'auto',
     backgroundColor: '#000',
     opacity: 0.6
   };
-  
+
   const dialogStyle = function() {
     // we use some psuedo random coords so nested modals
     // don't sit right on top of each other.
     let top = -50;
     let left = 50;
-  
+
     return {
       position: 'absolute',
       width: 400,
@@ -97,7 +97,7 @@ let rand = ()=> (Math.floor(Math.random() * 20) - 10);
 //   }else{
 //     return {};
 //   }
-  
+
 // }
 
 // function getColumns(data) {
@@ -114,7 +114,7 @@ let rand = ()=> (Math.floor(Math.random() * 20) - 10);
 //       }
 //     });
 //   }
-  
+
 //   return columns;
 // }
 
@@ -275,7 +275,7 @@ class App extends React.Component {
     })
     //send new/old values to server
     //notify user
-    //redirect 
+    //redirect
   }
 
   fetchBankById(id){
@@ -291,7 +291,7 @@ class App extends React.Component {
       this.setState({bankEdit: {id:reso.id,name:reso.name,fee:reso.fee}});
     });
   }
-  
+
   handleBankFeeChange(e){
     let fee = e.target.value;
     this.setState({bankEdit:{fee:fee}});
@@ -301,7 +301,7 @@ class App extends React.Component {
     event.preventDefault();
     ReactDOM.findDOMNode(this.submitTarget).setAttribute("disabled", "disabled");
     const data = new FormData(event.target);
-    // NOTE: you access FormData fields with `data.get(fieldName)`   
+    // NOTE: you access FormData fields with `data.get(fieldName)`
     data.set('addBank', 1);
     fetch(url, {
       method: 'POST',
@@ -366,7 +366,7 @@ class App extends React.Component {
         }
       })
     }
-    
+
   }
 
   fetchDepositsData(){
@@ -501,7 +501,7 @@ class App extends React.Component {
 
   handleRunnerUserChange(e){
     this.setState({runnerUser:e.target.value+"@fasicurrency.com"});
-  }  
+  }
 
   handleAddCard(e){
     e.preventDefault();
@@ -544,7 +544,7 @@ class App extends React.Component {
   opento(){
     this.setState({showModalto: true});
   }
-  
+
   fetchQueueData(){
     () => this.setState({queue:{loading:true}})
     var form = new FormData();
@@ -557,7 +557,7 @@ class App extends React.Component {
       this.setState({queue:{data,loading:false}})
     })
   }
-  
+
   handleCheckbox(e){
     var id = e.target.value;
     if(e.target.checked){
@@ -638,16 +638,16 @@ class App extends React.Component {
       do you just select ALL the records that are in your data?
       OR
       do you only select ALL the records that are in the current filtered data?
-      
+
       The latter makes more sense because 'selection' is a visual thing for the user.
       This is especially true if you are going to implement a set of external functions
       that act on the selected information (you would not want to DELETE the wrong thing!).
-      
+
       So, to that end, access to the internals of ReactTable are required to get what is
       currently visible in the table (either on the current page or any other page).
-      
+
       The HOC provides a method call 'getWrappedInstance' to get a ref to the wrapped
-      ReactTable and then get the internal state and the 'sortedData'. 
+      ReactTable and then get the internal state and the 'sortedData'.
       That can then be iterrated to get all the currently visible records and set
       the selection state.
     */
@@ -762,13 +762,13 @@ class App extends React.Component {
     });
   }
 
-  
+
 
   handleAddRunner(event){
     event.preventDefault();
     ReactDOM.findDOMNode(this.submitTarget).setAttribute("disabled", "disabled");
     const data = new FormData(event.target);
-    // NOTE: you access FormData fields with `data.get(fieldName)`   
+    // NOTE: you access FormData fields with `data.get(fieldName)`
     data.set('addRunner', 1);
     fetch(url, {
       method: 'POST',
@@ -778,22 +778,22 @@ class App extends React.Component {
     }).then(resa => {
       if(resa){
         switch(resa){
-          case "Name Exists": 
+          case "Name Exists":
             NotificationManager.error("الإسم موجود من قبل","خطأ");
             ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
             break;
-          
-          case "Phone Exists": 
+
+          case "Phone Exists":
             NotificationManager.error("رقم الهاتف موجود من قبل","خطأ");
             ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
             break;
-          
-          case "Failure": 
+
+          case "Failure":
           NotificationManager.error("فشل في إضافة ساحب جديد","خطأ");
           ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
           break;
-          
-          
+
+
         }
       }
       if(resa.toString().localeCompare("Failure")!==0){
@@ -802,7 +802,7 @@ class App extends React.Component {
           // window.location.replace('/build/admin/runners');
           window.location.replace(`/build/admin/runner/${resa}`);
         }
-        
+
         }
         else{
           NotificationManager.error('فشل في إضافة ساحب جديد','خطأ');
@@ -872,7 +872,7 @@ class App extends React.Component {
     ReactDOM.findDOMNode(this.submitTarget).setAttribute("disabled", "disabled");
     NotificationManager.warning("الرجاء الإنتظار...","إضافة حساب لزبون جديد");
     const data = new FormData(event.target);
-    // NOTE: you access FormData fields with `data.get(fieldName)`   
+    // NOTE: you access FormData fields with `data.get(fieldName)`
     data.set('addCustomer', 1);
     fetch(url, {
       method: 'POST',
@@ -882,22 +882,22 @@ class App extends React.Component {
     }).then(resa => {
       if(resa){
         switch(resa){
-          case "Name Exists": 
+          case "Name Exists":
             NotificationManager.error("الإسم موجود من قبل","خطأ");
             ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
             break;
-          
-          case "Phone Exists": 
+
+          case "Phone Exists":
             NotificationManager.error("رقم الهاتف موجود من قبل","خطأ");
             ReactDOM.findDOMNode(this.submitTarget).removeAttribute("disabled");
             break;
-          
+
           default:
             if(isNumber(resa)==true){
               NotificationManager.success("تمت إضافة حساب لزبون جديد","نجاح");
               window.location.replace(`/build/admin/customer/${resa}`);
             }
-          
+
         }
         console.log("validating response");
         if(!isNaN(resa)){
@@ -921,11 +921,11 @@ class App extends React.Component {
   generateKey(pre) {
     return `${ pre }_${ new Date().getTime() }`;
   }
-  
+
   addCardRow(e){
     e.preventDefault();
     let row = <tr key={this.generateKey("card_row")}><td><input type="text" name="owname" placeholder="إسم مالك البطاقة" required/></td><td><input type="text" name="card_number" placeholder="رقم البطاقة" required/></td><td><input name="card_code" type="text" placeholder="كود البطاقة" required/></td><td><input type="text" name="type" placeholder="النوع" required/></td><td><input type="text" name="bank" placeholder="المصرف" required/></td><td><input type="text" name="exp" placeholder="الصلاحية" required/></td><td><input type="text" name="state" placeholder="الحاله" required/></td><td><input type="text" name="credit" placeholder="الرصيد" required/></td><td><input type="text" name="drawn" placeholder="المسحوب منه" required/></td></tr>;
-    
+
     this.setState({cardRow:[this.state.cardRow,row]}) ;
     ReactDOM.findDOMNode(this.target).setAttribute("disabled", "disabled");
     // this.refs.target.setAttribute("disabled", "disabled");
@@ -985,9 +985,9 @@ class App extends React.Component {
   }
 
   render() {
-    
-    
-    const pg_customer = () => { 
+
+
+    const pg_customer = () => {
       const { data , loading} = this.state.customer;
       return( <div>
         <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
@@ -1195,7 +1195,7 @@ class App extends React.Component {
                   Header: 'إشاري البطاقة',
                   accessor: 'card_id',
                   Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
-                }, 
+                },
                 {
                   Header: 'إشاري الساحب',
                   accessor: 'runner_id', // String-based value accessors!
@@ -1262,7 +1262,7 @@ class App extends React.Component {
           </form>
           );
         };
-        
+
         const sharedProps = {
           container: this,
           target: this.getTarget,
@@ -1377,7 +1377,7 @@ class App extends React.Component {
               }
             })
           }
-          
+
           handleChangeCustomerPass(e){
             e.preventDefault();
             NotificationManager.warning("يتم تغيير كلمة سر للزبون","الرجاء الإنتظار");
@@ -1472,7 +1472,7 @@ class App extends React.Component {
             var formData = new FormData();
             formData.append('card4RecCust', '1');
             formData.append('customer_id',cuid);
-        
+
             fetch(url,{
               method: 'POST',
               body: formData
@@ -1526,7 +1526,7 @@ class App extends React.Component {
               }
             })
           }
-        
+
           handleCustomerWithdraw(e){
             e.preventDefault();
             ReactDOM.findDOMNode(this._button).setAttribute("disabled", "disabled");
@@ -1587,14 +1587,14 @@ class App extends React.Component {
           close(){
             this.setState({showModal: false});
           }
-        
+
           open(){
             this.setState({showModal: true});
           }
           closeto(){
             this.setState({showModalto: false});
           }
-        
+
           opento(){
             this.setState({showModalto: true});
           }
@@ -1602,7 +1602,7 @@ class App extends React.Component {
           closetree(){
             this.setState({showModaltree: false});
           }
-        
+
           opentree(){
             this.setState({showModaltree: true});
           }
@@ -1610,7 +1610,7 @@ class App extends React.Component {
           closefoor(){
             this.setState({showModalfoor: false});
           }
-        
+
           openfoor(){
             this.setState({showModalfoor: true});
           }
@@ -1618,7 +1618,7 @@ class App extends React.Component {
           closefive(){
             this.setState({showModalfive: false});
           }
-        
+
           openfive(){
             this.setState({showModalfive: true});
           }
@@ -1628,7 +1628,7 @@ class App extends React.Component {
             var formData = new FormData();
             formData.append('account', '1');
             formData.append('id', id);
-        
+
             fetch(url,{
               method: 'POST',
               body: formData
@@ -1652,7 +1652,7 @@ class App extends React.Component {
             var formData = new FormData();
             formData.append('card', '1');
             formData.append('id', id);
-        
+
             fetch(url,{
               method: 'POST',
               body: formData
@@ -1670,7 +1670,7 @@ class App extends React.Component {
           getTarget() {
             return ReactDOM.findDOMNode(this.target);
           }
-        
+
           getSubmitTarget(){
             return ReactDOM.findDOMNode(this.submitTarget);
           }
@@ -1726,36 +1726,36 @@ class App extends React.Component {
                     </tbody>
                   </Table>
                 )});
-                
+
                 var card4RecCust = this.state.card4RecCust.map((card,index) => {
                   return(
                       <option key={"card4w"+index} value={card.id}>{card.id}-{card.owname}-{card.bank}({card.act_bal})</option>
                   )
                 })
-  
+
                 var cards4withdraw = data2.map((card,index) => {
                   return(
                       <option key={"card4w"+index} value={card.id}>{card.id}-{card.owname}-{card.bank}({card.act_bal})</option>
                   )
                 })
-  
+
                 var banks4cards = banks.map((bank,index) => {
                   return(
                       <option key={"bank4crds"+index} value={bank.id}>{bank.name}</option>
                   )
                 })
-              
+
             }
             catch(error){
               console.error(error);
             }
-            
+
             finally{
             return(
             <div>
               <h3>ملف الزبون {id}</h3>
               {customer}
-              <ReactTable 
+              <ReactTable
                 className="-striped -highlight"
                 onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
                 noDataText="ﻻ توجد بيانات مطابقة !"
@@ -1845,7 +1845,7 @@ class App extends React.Component {
                     {/* <ModalExample/> */}
                   </div>
                 </Modal>
-  
+
                 <Button className="btn btn-danger" onClick={this.opento}>إجراء سحب</Button>
                 <Modal
                   aria-labelledby='modal-label'
@@ -1940,7 +1940,7 @@ class App extends React.Component {
                       {/* <ModalExample/> */}
                     </div>
                   </Modal></div>)
-                  
+
                   :
                   this.state.customerUserExist==false?(<div>
                     <Button className="btn btn-info" onClick={this.openfoor}>إضافة معرف دخول</Button>
@@ -1965,13 +1965,13 @@ class App extends React.Component {
                       </div>
                     </Modal>
                   </div>):(<div></div>)}
-                
+
                 <Button onClick={() => window.print()}>طباعة</Button>
             </div>
             );}
           }
         }
-    
+
         const Customer = ({ match }) => {
           const { data , data2 , loading} = this.state.customer;
           const  banks  = this.state.bank.data;
@@ -2017,18 +2017,18 @@ class App extends React.Component {
                     <option key={"bank4crds"+index} value={bank.id}>{bank.name}</option>
                 )
               })
-            
+
           }
           catch(error){
             console.error(error);
           }
-          
+
           finally{
           return(
           <div>
             <h3>ملف الزبون {match.params.id}</h3>
             {customer}
-            <ReactTable 
+            <ReactTable
               className="-striped -highlight"
               onFetchData={() => this.getCustomerData(id)} // getcardata needs id for its for 1 but fetchcardata iz 4 all
               noDataText="ﻻ توجد بيانات مطابقة !"
@@ -2211,7 +2211,7 @@ class App extends React.Component {
             close(){
               this.setState({showModal: false});
             }
-          
+
             open(){
               this.setState({showModal: true});
             }
@@ -2220,7 +2220,7 @@ class App extends React.Component {
               var formData = new FormData();
               formData.append('card', '1');
               formData.append('id', id);
-          
+
               fetch(url,{
                 method: 'POST',
                 body: formData
@@ -2236,7 +2236,7 @@ class App extends React.Component {
               this.fetchBankData();
             }
 
-            
+
             render(){
               const {data} = this.state.card;
               const banks = this.state.bank.data;
@@ -2344,7 +2344,7 @@ class App extends React.Component {
                   </Well>
                   {cards}
 
-                  
+
                   <Button onClick={() => window.print()}>طباعة</Button>
                 </div>
               )
@@ -2399,7 +2399,7 @@ class App extends React.Component {
           </p>
         );
 
-        const pg_runner = () => { 
+        const pg_runner = () => {
           const { data , loading} = this.state.runner;
           return( <div>
             <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
@@ -2454,13 +2454,13 @@ class App extends React.Component {
           <Link to="/build/admin/addRunner" className="btn btn-info">إضافة</Link>
           </div>
           )};
-        
-        
+
+
         const sendCard = () => {
           const { runners, cards4send , loading} = this.state.sendCard;
           const { selectAll } = this.state.sendCard;
           this.fetchCards4Send();
-          
+
           const tbl_cards4send = (
             <Table>
               <thead>
@@ -2468,18 +2468,18 @@ class App extends React.Component {
               </thead>
               <tbody>
                 {
-                  
+
                   cards4send.map((card,index) => {
                     return(
                       <tr key={"row_card_"+index}><td>{card.id}</td><td>{card.owname}</td><td>{card.card_number}</td><td>|</td><td>
-                        <select 
-                        onChange={this.handleSelectRunnerChange} 
+                        <select
+                        onChange={this.handleSelectRunnerChange}
                         required
                         placeholder="الساحب"
                         ref={ref => {
                           this._select = ref
                         }}
-                        
+
                         value={this.state.selectedRunner}
                         // defaultValue={this.state.selectedRunner}
                         >
@@ -2493,7 +2493,7 @@ class App extends React.Component {
                   })
                 }
               </tbody>
-              
+
             </Table>
           );
           // this.state.selectedRunner = runners.id;
@@ -2506,7 +2506,7 @@ class App extends React.Component {
               }
             </select>
           )
-            
+
           return (
             <div>
               <Well bsSize="small" style={{backgroundImage: "linear-gradient(#ffffff, #ffffff)",fontWeight:"500",textShadow: "0 1px 2px rgba(0,0,0,.6)",lineHeight:"1.1",opacity:"0.7"}} >
@@ -2540,14 +2540,14 @@ class App extends React.Component {
                     filterAll: true,
                   }, {
                     Header: 'الساحب',
-                    Cell: <select 
-                              onChange={this.handleSelectRunnerChange} 
+                    Cell: <select
+                              onChange={this.handleSelectRunnerChange}
                               required
                               placeholder="الساحب"
                               ref={ref => {
                                 this._select = ref
                               }}
-                              
+
                               value={this.state.selectedRunner}
                               // defaultValue={this.state.selectedRunner}
                               >
@@ -2726,22 +2726,22 @@ class App extends React.Component {
             .then(resText => {
               if(resText === "Success"){
                 NotificationManager.success("تمت إضافة معرف الدخول للساحب","نجاح");
-                this.close();
+                this.closefoor();
               }else{
                 NotificationManager.error("فشل إضافة معرف الدخول للساحب","خطأ");
-                this.close();
+                this.closefoor();
               }
             });
           }
 
           handleRunnerUserChange(e){
             this.setState({runnerUser:e.target.value+"@fasicurrency.com"});
-          }  
+          }
 
           close(){
             this.setState({showModal: false});
           }
-        
+
           open(){
             this.setState({showModal: true});
           }
@@ -2749,7 +2749,7 @@ class App extends React.Component {
           closeto(){
             this.setState({showModalto: false});
           }
-        
+
           opento(){
             this.setState({showModalto: true});
           }
@@ -2757,7 +2757,7 @@ class App extends React.Component {
           closefoor(){
             this.setState({showModalfoor: false});
           }
-        
+
           openfoor(){
             this.setState({showModalfoor: true});
           }
@@ -2790,13 +2790,13 @@ class App extends React.Component {
             const gotoSendCard = () => {window.location = '/build/admin/sendCard'};
             //const email = ReactDOM.findDOMNode(this._runnerUser).value+"@fasicurrency.com";
             // isLoggedIn() ? (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>
-            
+
             try{
 
               return (
                 <div>
                   {
-                    
+
                         data.map((runner,index) => {
                           return(
                             <div>
@@ -3146,7 +3146,7 @@ class App extends React.Component {
                                     },{
                                       Header: 'النوع',
                                       accessor: 'type', // String-based value accessors!
-                                      Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                      Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
                                     },{
                                       Header: 'السبب',
                                       accessor: 'cause' // String-based value accessors!
@@ -3203,7 +3203,7 @@ class App extends React.Component {
                                   {/* <ModalExample/> */}
                                 </div>
                               </Modal></div>)
-                              
+
                               :
                               this.state.runnerUserExist==false?(<div>
                                 <Button className="btn btn-danger" onClick={this.openfoor}>إضافة معرف دخول</Button>
@@ -3230,7 +3230,7 @@ class App extends React.Component {
                                 </Modal>
                               </div>):(<div></div>)}
                               </tr></Table></td></tr>
-                            
+
                             <Modal
                               aria-labelledby='modal-label'
                               style={modalStyle}
@@ -3259,7 +3259,7 @@ class App extends React.Component {
                           </tbody>
                         </Table><Button onClick={() => window.print()}>طباعة</Button></div>)
                         })
-                        
+
                   }
                 </div>
               )
@@ -3277,13 +3277,13 @@ class App extends React.Component {
         //   const gotoSendCard = () => {window.location = '/build/admin/sendCard'};
         //   //const email = ReactDOM.findDOMNode(this._runnerUser).value+"@fasicurrency.com";
         //   // isLoggedIn() ? (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>
-          
+
         //   try{
 
         //     return (
         //       <div>
         //         {
-                  
+
         //               data.map((runner,index) => {
         //                 return(
         //                   <div>
@@ -3328,7 +3328,7 @@ class App extends React.Component {
         //                 </tbody>
         //               </Table></div>)
         //               })
-                      
+
         //         }
         //       </div>
         //     )
@@ -3336,7 +3336,7 @@ class App extends React.Component {
         //   }catch(error){
         //     console.error(error);
         //   }
-          
+
         // }
 
         const Users = () => {
@@ -3478,7 +3478,7 @@ class App extends React.Component {
                     <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
                     <tr dir="rtl"><td>المصرف:{this.props.cardo.bank}</td><td>البطاقة:{this.props.cardo.id}</td></tr>
                     <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
-                    
+
                     <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
                   </tbody>
                 </Table>
@@ -3495,14 +3495,14 @@ class App extends React.Component {
                     <tr><td dir="rtl">{this.props.customer.phone}</td><td>رقم هاتفه</td></tr>
                     <tr dir="rtl"><td>المصرف:{this.props.cardo.bank}</td><td>البطاقة:{this.props.cardo.id}</td></tr>
                     <tr><td dir="rtl"><b style={{border:'solid'}}>$ {this.props.amount}</b></td><td>المبلغ</td></tr>
-                    
+
                     <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
                   </tbody>
                 </Table>
               </div>
-              
+
             );
-            
+
           }
         }
 
@@ -3536,7 +3536,7 @@ class App extends React.Component {
             var formData = new FormData();
             formData.append('account', '1');
             formData.append('id', id);
-        
+
             fetch(url,{
               method: 'POST',
               body: formData
@@ -3553,7 +3553,7 @@ class App extends React.Component {
             var formData = new FormData();
             formData.append('transcard', '1');
             formData.append('id', id);
-        
+
             fetch(url,{
               method: 'POST',
               body: formData
@@ -3577,7 +3577,7 @@ class App extends React.Component {
             let id = this.props.match.params.id;
             let card = this.props.match.params.card;
             let amount = this.props.match.params.amount;
-            
+
             this.getDate();
 
             return (
@@ -3587,7 +3587,7 @@ class App extends React.Component {
                     return(
                       <div key={"receipt"+index}>
                         <PrintProvider>
-                        
+
                         <Print printOnly single loose={true} name="foo">
                           <Receipt
                             ref={el => (this.componentRef = el)}
@@ -3596,7 +3596,7 @@ class App extends React.Component {
                             amount={amount}
                             date={this.state.date}
                           />
-                        </Print>     
+                        </Print>
 
                         </PrintProvider>
                         <div>
@@ -3617,7 +3617,7 @@ class App extends React.Component {
                                 })
                               }
                               <tr><td dir="rtl"><b style={{border:'solid'}}>$ {amount}</b></td><td>المبلغ</td></tr>
-                              
+
                               <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
                             </tbody>
                           </Table>
@@ -3627,7 +3627,7 @@ class App extends React.Component {
                           trigger={() => <Button>طباعة</Button>}
                           content={() => this.componentRef}
                         /> */}
-                        
+
                       </div>
                     )
                   })
@@ -3661,12 +3661,12 @@ class App extends React.Component {
         //                     <tr><td dir="rtl">{customer.name}</td><td>إسم المستلم</td></tr>
         //                     <tr><td dir="rtl">{customer.phone}</td><td>رقم هاتفه</td></tr>
         //                     <tr><td dir="rtl"><b style={{border:'solid'}}>$ {amount}</b></td><td>المبلغ</td></tr>
-                            
+
         //                     <tr><td dir="rtl">توقيع الموظف</td><td>.</td><td>توقيع الزبون</td></tr>
         //                   </tbody>
         //                 </Table>
         //               </div>
-                    
+
         //               <ReactToPrint
         //                 trigger={() => <Button>طباعة</Button>}
         //                 content={() => {this._formToPrint}}
@@ -3699,7 +3699,7 @@ class App extends React.Component {
               var form = new FormData();
               form.set('receiveCard',1);
               form.set('card_id', row.row.id);
-        
+
               fetch(url,{
                 method: 'POST',
                 body:form
@@ -3714,13 +3714,13 @@ class App extends React.Component {
                 }
               })
             }
-            
+
           }
-        
+
           fetchRecCardData(){
             var form = new FormData();
             form.set('getRecCards',1);
-        
+
             fetch(url,{
               method: 'POST',
               body:form
@@ -3789,7 +3789,7 @@ class App extends React.Component {
           /></div>)
           }
         }
-        
+
         class Deposits extends React.Component{
           constructor(props, context) {
             super(props, context);
@@ -3810,7 +3810,7 @@ class App extends React.Component {
               var form = new FormData();
               form.set('verifyDeposit',1);
               form.set('deposit_id', row.row.id);
-        
+
               fetch(url,{
                 method: 'POST',
                 body:form
@@ -3825,13 +3825,13 @@ class App extends React.Component {
                 }
               })
             }
-            
+
           }
-        
+
           fetchDepositsData(){
             var form = new FormData();
             form.set('getDeposits4v',1);
-        
+
             fetch(url,{
               method: 'POST',
               body:form
@@ -3901,8 +3901,8 @@ class App extends React.Component {
               className="-striped -highlight"
             /></div>)
           }
-        } 
-        
+        }
+
 
         const VDeposits = () => {
           const { data , loading} = this.state.vdeposit;
@@ -4414,7 +4414,7 @@ class App extends React.Component {
                             },{
                               Header: 'النوع',
                               accessor: 'type', // String-based value accessors!
-                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
                             },{
                               Header: 'السبب',
                               accessor: 'cause' // String-based value accessors!
@@ -4470,7 +4470,7 @@ class App extends React.Component {
                               },{
                                 Header: 'النوع',
                                 accessor: 'type', // String-based value accessors!
-                                Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decreace"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
                               },{
                                 Header: 'السبب',
                                 accessor: 'cause' // String-based value accessors!
@@ -4512,6 +4512,11 @@ class App extends React.Component {
                                   Header: 'إشاري الساحب',
                                   accessor: 'runner_id', // String-based value accessors!
                                   Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                                },
+                                {
+                                  Header: 'إشاري البطاقة',
+                                  accessor: 'card_id', // String-based value accessors!
+                                  Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
                                 }, {
                                   Header: 'القيمة',
                                   accessor: 'amount',
@@ -4521,6 +4526,9 @@ class App extends React.Component {
                                   Header: 'النوع',
                                   accessor: 'type', // String-based value accessors!
                                   Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                },{
+                                  Header: 'السبب',
+                                  accessor: 'cause' // String-based value accessors!
                                 },{
                                   Header: 'التاريخ',
                                   accessor: 'date' // String-based value accessors!
@@ -4546,8 +4554,8 @@ class App extends React.Component {
                             />
                       </Tab>
                     </Tabs>
-                  
-                  
+
+
                   </Tab>
                   <Tab eventKey="contactus" title="الشركة">
                   <ReactTable
@@ -4720,7 +4728,7 @@ class App extends React.Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-        
+
         <Switch>
         <Route path="/build/admin" render={() => (
           isLoggedIn() ? (
@@ -4751,14 +4759,14 @@ class App extends React.Component {
             <Route path="/build/admin/addCard" />
             <Route path="/build/admin/reports" component={Reports}/>
             </Switch>
-            
+
           ) : (
             // {pg_customer}
             <Redirect to="/build/login"/>
           )
         )}/>
-        
-        
+
+
         <Route path="/build/fasi" render={home_header} />
         <Route path="/build/login" component={Login} />
         {/* <Route path="/logout" component={Logout}/> */}
@@ -4767,7 +4775,7 @@ class App extends React.Component {
         </Switch>
 
         <NotificationContainer/>
-        
+
       </div>
     );
   }

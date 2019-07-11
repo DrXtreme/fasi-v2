@@ -2,7 +2,7 @@
   "name": "fasi-frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://admin.fasicurrency.com/build/",
+  "homepage": "http://localhost/build/",
   "dependencies": {
     "@culturehq/charts": "github:culturehq/charts",
     "axios": "^0.18.0",
