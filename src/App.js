@@ -27,10 +27,11 @@ import PrintProvider, { Print,NoPrint } from 'react-easy-print';
 import "react-toggle-component/styles.css";
 import { isNumber } from 'highcharts';
 import matchSorter from 'match-sorter';
+import print from 'print-js'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-// const url = 'http://localhost/api/';
-const url = 'http://localhost/api/';
+// const url = 'https://a.fasicurrency.com/api/';
+const url = 'https://a.fasicurrency.com/api/';
 
 
 
@@ -1245,7 +1246,7 @@ class App extends React.Component {
             <Table ref={table => {this.addTable=table;}} responsive>
               <tbody>
                 <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم صاحب الحساب" required/></td></tr>
-                <tr><td>رقم الهاتف</td><td><input type="number" name="phone" title="رقم هاتف صاحب الحساب" required/></td></tr>
+                <tr><td>رقم الهاتف</td><td><input type="number" name="phone" pattern="\d*" maxLength="18" title="رقم هاتف صاحب الحساب" required/></td></tr>
                 {/* {this.state.cardRow}
                 <tr><td><Button bsStyle="success" ref={button => {this.target = button;}} onClick={this.addCardRow} >+ أضف بطاقة...</Button></td></tr> */}
                 <tr><td></td><td>
@@ -1721,7 +1722,6 @@ class App extends React.Component {
                       <tr><td>إجمالي التسليمات:</td><td>{customer.tots_withdrawn}</td></tr>
                       <tr><td>إجمالي الأرصدة:</td><td>{tot_bal}</td></tr>
                       <tr><td>الهاتف:</td><td>{customer.phone}</td></tr>
-                      <tr><td>البطاقات:</td><td>{customer.cards_id}</td></tr>
                       <tr><td>تاريخ التسجيل :</td><td>{customer.created}</td></tr>
                     </tbody>
                   </Table>
@@ -1834,8 +1834,8 @@ class App extends React.Component {
                           </td></tr>
                           <tr><td><input name="exp" type="text" placeholder="الصلاحية" required/></td></tr>
                           <tr><td><input name="state" type="text" placeholder="الحاله" required/></td></tr>
-                          <tr><td><input type="text" name="credit" placeholder="الرصيد" required/></td></tr>
-                          <tr><td><input type="text" name="drawn" placeholder="المسحوب منه" required/></td></tr>
+                          <tr><td><input type="text" name="credit" pattern="\d*" maxLength="18" placeholder="الرصيد" required/></td></tr>
+                          <tr><td><input type="text" name="drawn" pattern="\d*" maxLength="18" placeholder="المسحوب منه" required/></td></tr>
                           <tr><td><Toggle label="عمولة المصرف" checked={this.state.bankChecked} onToggle={value => this.setState({bankChecked:value})} /></td></tr>
                         </tbody>
                       </Table>
@@ -1908,7 +1908,7 @@ class App extends React.Component {
                       <tbody>
                         <tr><td><input name="customer_id" type="text" defaultValue={this.props.match.params.id} readOnly required/></td></tr>
                         <tr><td><input name="name" type="text" defaultValue={last_customer.name} placeholder="الإسم" required/></td></tr>
-                        <tr><td><input name="phone" type="text" defaultValue={last_customer.phone} pattern="\d*" maxLength="8" placeholder="رقم الهاتف" required/></td></tr>
+                        <tr><td><input name="phone" type="text" defaultValue={last_customer.phone} pattern="\d*" maxLength="18" placeholder="رقم الهاتف" required/></td></tr>
                         </tbody>
                     </Table>
                     <br/>
@@ -2090,8 +2090,8 @@ class App extends React.Component {
                         </td></tr>
                         <tr><td><input name="exp" type="text" placeholder="الصلاحية" required/></td></tr>
                         <tr><td><input name="state" type="text" placeholder="الحاله" required/></td></tr>
-                        <tr><td><input type="text" name="credit" placeholder="الرصيد" required/></td></tr>
-                        <tr><td><input type="text" name="drawn" placeholder="المسحوب منه" required/></td></tr>
+                        <tr><td><input type="text" name="credit" pattern="\d*" maxLength="18" placeholder="الرصيد" required/></td></tr>
+                        <tr><td><input type="text" name="drawn" pattern="\d*" maxLength="18" placeholder="المسحوب منه" required/></td></tr>
                         <tr><td><Toggle label="عمولة المصرف" checked={this.state.bankChecked} onToggle={value => this.setState({bankChecked:value})} /></td></tr>
                       </tbody>
                     </Table>
@@ -2323,8 +2323,8 @@ class App extends React.Component {
                         </td></tr>
                         <tr><td><input name="exp" type="text" defaultValue={card.exp} placeholder="الصلاحية" required/></td></tr>
                         <tr><td><input name="state" type="text" defaultValue={card.state} placeholder="الحاله" required/></td></tr>
-                        <tr><td><input type="text" name="credit" defaultValue={card.credit} placeholder="الرصيد" required/></td></tr>
-                        <tr><td><input type="text" name="drawn" defaultValue={card.drawn} placeholder="المسحوب منه" required/></td></tr>
+                        <tr><td><input type="text" name="credit" pattern="\d*" maxLength="18" defaultValue={card.credit} placeholder="الرصيد" required/></td></tr>
+                        <tr><td><input type="text" name="drawn" pattern="\d*" maxLength="18" defaultValue={card.drawn} placeholder="المسحوب منه" required/></td></tr>
                         <tr><td><Toggle label="عمولة المصرف" defaultChecked={card.fee_type=="true"?true:false} checked={this.state.bankChecked} onToggle={value => this.setState({bankChecked:value})} /></td></tr>
                       </tbody>
                     </Table>
@@ -2792,11 +2792,9 @@ class App extends React.Component {
             // isLoggedIn() ? (<Button className="btn btn-danger" onClick={this.open}>إضافة معرف دخول</Button>
 
             try{
-
               return (
                 <div>
-                  {
-
+                  {//add loading
                         data.map((runner,index) => {
                           return(
                             <div>
@@ -3246,7 +3244,7 @@ class App extends React.Component {
                                   <tbody>
                                     <tr><td><input name="runner_id" type="text" defaultValue={this.props.match.params.id} readOnly required/></td></tr>
                                     <tr><td><input name="name" type="text" defaultValue={runner.name} placeholder="الإسم" required/></td></tr>
-                                    <tr><td><input name="number" type="text" defaultValue={runner.phone} pattern="\d*" maxLength="8" placeholder="رقم الهاتف" required/></td></tr>
+                                    <tr><td><input name="number" type="text" defaultValue={runner.phone} pattern="\d*" maxLength="18" placeholder="رقم الهاتف" required/></td></tr>
                                     <tr><td><input name="fee" type="text" defaultValue={runner.fee} pattern="\d*" maxLength="4" placeholder="العمولة" required/></td></tr>
                                     </tbody>
                                 </Table>
@@ -3367,7 +3365,7 @@ class App extends React.Component {
               <Table ref={table => {this.addTable=table;}} responsive>
                 <tbody>
                   <tr><td>الإسم:</td><td><input type="text" name="name" title="إسم الساحب" required/></td></tr>
-                  <tr><td>رقم الهاتف</td><td><input type="text" name="phone" title="رقم هاتف الساحب" required/></td></tr>
+                  <tr><td>رقم الهاتف</td><td><input type="text" name="phone" pattern="\d*" maxLength="18" title="رقم هاتف الساحب" required/></td></tr>
                   <tr><td>العموله</td><td><input type="text" name="fee" title="عمولة الساحب للبطاقة الواحدة" required/></td></tr>
                   <tr><td></td><td>
                   <Button ref={button => {this.submitTarget=button;}} type="submit" className="btn btn-info">قدّم</Button>
@@ -4200,7 +4198,96 @@ class App extends React.Component {
             this.editWithdraw = this.editWithdraw.bind(this);
             this.reprint = this.reprint.bind(this);
             this.handleEditRunnerCredit = this.handleEditRunnerCredit.bind(this);
+            this.editTrans = this.editTrans.bind(this);
+            this.editFee = this.editFee.bind(this);
+            this.editHouseFee = this.editHouseFee.bind(this);
+            this.editHouseRFee = this.editHouseRFee.bind(this);
           }
+
+          editHouseRFee(row){
+            let form = new FormData();
+            form.append('editHouseRFee','1');
+            form.append('houseFeeId',row.row.id);
+            form.append('newFee',window.prompt("سيقوم النظام بتعديل القيم المناسبه في جميع الحقول المتأثرة \nالرجاء إدخال القيمه الجديده للمعاملة "+row.row.id));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.componentDidMount();
+            })
+          }
+
+          editHouseFee(row){
+            let form = new FormData();
+            form.append('editHouseFee','1');
+            form.append('houseFeeId',row.row.id);
+            form.append('newFee',window.prompt("سيقوم النظام بتعديل القيم المناسبه في جميع الحقول المتأثرة \nالرجاء إدخال القيمه الجديده للمعاملة "+row.row.id));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.componentDidMount();
+            })
+          }
+
+          editFee(row){
+            let form = new FormData();
+            form.append('editFeeTrans','1');
+            form.append('runnerFeeId',row.row.id);
+            form.append('newFee',window.prompt("سيقوم النظام بتعديل القيم المناسبه في جميع الحقول المتأثرة \nالرجاء إدخال القيمه الجديده للمعاملة "+row.row.id));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.componentDidMount();
+            })
+          }
+
+          editTrans(row){
+            let form = new FormData();
+            form.append('editCardTrans','1');
+            form.append('cardTransId',row.row.id);
+            form.append('newAmount',window.prompt("سيقوم النظام بتعديل القيم المناسبه في جميع الحقول المتأثرة \nالرجاء إدخال القيمه الجديده للمعاملة "+row.row.id));
+            NotificationManager.warning("يتم تعديل معاملة","الرجاء الإنتظار");
+            fetch(url,{
+              method: 'POST',
+              body: form,
+            })
+            .then(res => res.text())
+            .then(reso => {
+              if(reso==="Success"){
+                NotificationManager.success("تم تعديل معاملة","نجاح");
+              }else{
+                NotificationManager.error("فشل تعديل معاملة","فشل");
+              }
+              this.componentDidMount();
+            })
+          }
+
           handleEditRunnerCredit(row){
             let form = new FormData();
             form.append('editRunnerCredit','1');
@@ -4226,6 +4313,7 @@ class App extends React.Component {
           reprint(row){
             window.location.replace(`/build/admin/customertransaction/${row.row.account_id}/${row.row.amount}/${row.row.card_id}`);
           }
+
           editWithdraw(row){
             let form = new FormData();
             form.append('editCustomerWithdraw','1');
@@ -4357,7 +4445,26 @@ class App extends React.Component {
                             },{
                               Header: 'النوع',
                               accessor: 'type', // String-based value accessors!
-                              Cell: props => <span className='number'>{props.value = "increase" ? "سحب" : " "}</span> // Custom cell components!
+                              Cell: props => <span className='number'>{props.value = "increase" ? "سحب" : " "}</span>,
+                              filterMethod: (filter, row) => {
+                                if (filter.value === "all") {
+                                  return true;
+                                }
+                                if (filter.value === "increase") {
+                                  return row[filter.id] == "increase";
+                                }
+                                return row[filter.id] != "increase";
+                              },
+                              Filter: ({ filter, onChange }) =>
+                                <select
+                                  onChange={event => onChange(event.target.value)}
+                                  style={{ width: "100%" }}
+                                  value={filter ? filter.value : "all"}
+                                >
+                                  <option value="all">الكل</option>
+                                  <option value="increase">سحب</option>
+                                  <option value="decrease">غير ذلك</option>
+                                </select>
                             },{
                               Header: 'السبب',
                               accessor: 'cause' // String-based value accessors!
@@ -4387,7 +4494,23 @@ class App extends React.Component {
                           filterable
                           minRows={3}
                           defaultPageSize={10}
+                          ref={(r)=>this.custTable=r}
                         />
+                        <Button
+                        onClick={()=>print({printable: this.custTable.getResolvedState().sortedData,
+                        properties: [
+                        { field: 'card_id', displayName: 'البطاقة'},
+                        { field: 'type', displayName: 'النوع'},
+                        { field: 'cause', displayName: 'السبب'},
+                        { field: 'date', displayName: 'التاريخ'},
+                        { field: 'amount', displayName: 'القيمه'},
+                          ],
+                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">التسليمات</h3>',
+                          style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          type: 'json'})}>
+                          طباعة
+                          </Button>
                   </Tab>
                   <Tab eventKey="profile" title="البطاقات">
                   <ReactTable
@@ -4406,6 +4529,11 @@ class App extends React.Component {
                               Header: 'إشاري البطاقة',
                               accessor: 'card_id', // String-based value accessors!
                               Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
+                            },
+                            {
+                              Header: 'إشاري الساحب',
+                              accessor: 'runner_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
                             }, {
                               Header: 'القيمة',
                               accessor: 'amount',
@@ -4414,14 +4542,62 @@ class App extends React.Component {
                             },{
                               Header: 'النوع',
                               accessor: 'type', // String-based value accessors!
-                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>),
+                              filterMethod: (filter, row) => {
+                                if (filter.value === "all") {
+                                  return true;
+                                }
+                                if (filter.value === "increase") {
+                                  return row[filter.id] == "increase";
+                                }
+                                return row[filter.id] != "increase";
+                              },
+                              Filter: ({ filter, onChange }) =>
+                                <select
+                                  onChange={event => onChange(event.target.value)}
+                                  style={{ width: "100%" }}
+                                  value={filter ? filter.value : "all"}
+                                >
+                                  <option value="all">الكل</option>
+                                  <option value="increase">زيادة</option>
+                                  <option value="decrease">نقص</option>
+                                </select> // Custom cell components!
                             },{
                               Header: 'السبب',
-                              accessor: 'cause' // String-based value accessors!
+                              accessor: 'cause',
+                              filterMethod: (filter, row) => {
+                                if (filter.value === "all") {
+                                  return true;
+                                }
+                                if (filter.value === "Draw") {
+                                  return row[filter.id] == "Draw";
+                                }
+                                if (filter.value === "Company Fee Deducted") {
+                                  return row[filter.id] == "Company Fee Deducted";
+                                }
+                                if (filter.value === "Customer Withdraws Money") {
+                                  return row[filter.id] == "Customer Withdraws Money";
+                                }
+                                return row[filter.id] != "Draw";
+                              },
+                              Filter: ({ filter, onChange }) =>
+                                <select
+                                  onChange={event => onChange(event.target.value)}
+                                  style={{ width: "100%" }}
+                                  value={filter ? filter.value : "all"}
+                                >
+                                  <option value="all">الكل</option>
+                                  <option value="Draw">سحب</option>
+                                  <option value="Company Fee Deducted">عمولة الشركة</option>
+                                  <option value="Customer Withdraws Money">تسليم للزبون</option>
+                                </select>
                             },{
                               Header: 'التاريخ',
                               accessor: 'date' // String-based value accessors!
-                            },
+                            },{
+                              Header: 'تعديل',
+                              Cell: row => (row.row.type=="increase"?<Button className="btn btn-link" onClick={() => this.editTrans(row)}>تعديل</Button>:"")
+                            }
                             ]}
                           className="-striped -highlight"
                           data={crdata}
@@ -4437,7 +4613,24 @@ class App extends React.Component {
                           filterable
                           minRows={3}
                           defaultPageSize={10}
+                          ref={(r)=>this.cardTable=r}
                         />
+                        <Button
+                        onClick={()=>print({printable: this.cardTable.getResolvedState().sortedData,
+                        properties: [
+                        { field: 'card_id', displayName: 'البطاقة'},
+                        { field: 'runner_id', displayName: 'الساحب'},
+                        { field: 'type', displayName: 'النوع'},
+                        { field: 'cause', displayName: 'السبب'},
+                        { field: 'date', displayName: 'التاريخ'},
+                        { field: 'amount', displayName: 'القيمه'},
+                          ],
+                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات البطاقات</h3>',
+                          style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          type: 'json'})}>
+                          طباعة
+                          </Button>
                   </Tab>
                   <Tab eventKey="contact" title="الساحبين">
                     <Tabs defaultActiveKey="fees" transition={false} id="noanim-tab-example">
@@ -4470,14 +4663,36 @@ class App extends React.Component {
                               },{
                                 Header: 'النوع',
                                 accessor: 'type', // String-based value accessors!
-                                Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>),
+                                filterMethod: (filter, row) => {
+                                  if (filter.value === "all") {
+                                    return true;
+                                  }
+                                  if (filter.value === "increase") {
+                                    return row[filter.id] == "increase";
+                                  }
+                                  return row[filter.id] != "increase";
+                                },
+                                Filter: ({ filter, onChange }) =>
+                                  <select
+                                    onChange={event => onChange(event.target.value)}
+                                    style={{ width: "100%" }}
+                                    value={filter ? filter.value : "all"}
+                                  >
+                                    <option value="all">الكل</option>
+                                    <option value="increase">زيادة</option>
+                                    <option value="decrease">نقص</option>
+                                  </select> // Custom cell components!
                               },{
                                 Header: 'السبب',
                                 accessor: 'cause' // String-based value accessors!
                               },{
                                 Header: 'التاريخ',
                                 accessor: 'date' // String-based value accessors!
-                              },
+                              },{
+                                Header: 'تعديل',
+                                Cell: row=><Button onClick={()=>this.editFee(row)}>تعديل</Button>
+                              }
                               ]}
                             className="-striped -highlight"
                             data={rndata}
@@ -4493,7 +4708,24 @@ class App extends React.Component {
                             filterable
                             minRows={3}
                             defaultPageSize={10}
+                            ref={(r)=>this.feeTable=r}
                           />
+                          <Button
+                          onClick={()=>print({printable: this.feeTable.getResolvedState().sortedData,
+                          properties: [
+                          { field: 'card_id', displayName: 'البطاقة'},
+                          { field: 'runner_id', displayName: 'الساحب'},
+                          { field: 'type', displayName: 'النوع'},
+                          { field: 'cause', displayName: 'السبب'},
+                          { field: 'date', displayName: 'التاريخ'},
+                          { field: 'amount', displayName: 'القيمه'},
+                            ],
+                            header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">العمولات</h3>',
+                            style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                            Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                            type: 'json'})}>
+                            طباعة
+                            </Button>
                       </Tab>
                       <Tab eventKey="credits" title="السحب و الديون">
                         <ReactTable
@@ -4525,7 +4757,26 @@ class App extends React.Component {
                                 },{
                                   Header: 'النوع',
                                   accessor: 'type', // String-based value accessors!
-                                  Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                  Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>),
+                                  filterMethod: (filter, row) => {
+                                    if (filter.value === "all") {
+                                      return true;
+                                    }
+                                    if (filter.value === "increase") {
+                                      return row[filter.id] == "increase";
+                                    }
+                                    return row[filter.id] != "increase";
+                                  },
+                                  Filter: ({ filter, onChange }) =>
+                                    <select
+                                      onChange={event => onChange(event.target.value)}
+                                      style={{ width: "100%" }}
+                                      value={filter ? filter.value : "all"}
+                                    >
+                                      <option value="all">الكل</option>
+                                      <option value="increase">زيادة</option>
+                                      <option value="decrease">نقص</option>
+                                    </select> // Custom cell components!
                                 },{
                                   Header: 'السبب',
                                   accessor: 'cause' // String-based value accessors!
@@ -4534,7 +4785,7 @@ class App extends React.Component {
                                   accessor: 'date' // String-based value accessors!
                                 },{
                                   Header: 'تعديل',
-                                  Cell: row=><Button onClick={()=>this.handleEditRunnerCredit(row)}>تعديل</Button>
+                                  Cell: row=>row.row.type=="increase"?<Button onClick={()=>this.handleEditRunnerCredit(row)}>تعديل</Button>:""
                                 }
                                 ]}
                               className="-striped -highlight"
@@ -4551,7 +4802,24 @@ class App extends React.Component {
                               filterable
                               minRows={3}
                               defaultPageSize={10}
+                              ref={(r)=>this.rcTable=r}
                             />
+                            <Button
+                            onClick={()=>print({printable: this.rcTable.getResolvedState().sortedData,
+                            properties: [
+                            { field: 'card_id', displayName: 'البطاقة'},
+                            { field: 'runner_id', displayName: 'الساحب'},
+                            { field: 'type', displayName: 'النوع'},
+                            { field: 'cause', displayName: 'السبب'},
+                            { field: 'date', displayName: 'التاريخ'},
+                            { field: 'amount', displayName: 'القيمه'},
+                              ],
+                              header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات السحب و الديون</h3>',
+                              style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                              Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                              type: 'json'})}>
+                              طباعة
+                              </Button>
                       </Tab>
                     </Tabs>
 
@@ -4575,6 +4843,10 @@ class App extends React.Component {
                               accessor: 'card_id', // String-based value accessors!
                               Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
                             }, {
+                              Header: 'إشاري الساحب',
+                              accessor: 'runner_id', // String-based value accessors!
+                              Cell: props => <span className='number'><Link to={`/build/admin/runner/${props.value}`}>{props.value}</Link></span>
+                            }, {
                               Header: 'القيمة',
                               accessor: 'amount',
                               id: 'amount',
@@ -4582,14 +4854,36 @@ class App extends React.Component {
                             },{
                               Header: 'النوع',
                               accessor: 'type', // String-based value accessors!
-                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                              Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>),
+                              filterMethod: (filter, row) => {
+                                if (filter.value === "all") {
+                                  return true;
+                                }
+                                if (filter.value === "increase") {
+                                  return row[filter.id] == "increase";
+                                }
+                                return row[filter.id] != "increase";
+                              },
+                              Filter: ({ filter, onChange }) =>
+                                <select
+                                  onChange={event => onChange(event.target.value)}
+                                  style={{ width: "100%" }}
+                                  value={filter ? filter.value : "all"}
+                                >
+                                  <option value="all">الكل</option>
+                                  <option value="increase">زيادة</option>
+                                  <option value="decrease">نقص</option>
+                                </select> // Custom cell components!
                             },{
                               Header: 'السبب',
                               accessor: 'cause' // String-based value accessors!
                             },{
                               Header: 'التاريخ',
                               accessor: 'date' // String-based value accessors!
-                            },
+                            },{
+                              Header: 'تعديل',
+                              Cell: row=>row.row.type=="increase"?<Button onClick={()=>this.editHouseFee(row)}>تعديل</Button>:<Button onClick={()=>this.editHouseRFee(row)}>تعديل</Button>
+                            }
                             ]}
                           className="-striped -highlight"
                           data={hsdata}
@@ -4605,7 +4899,24 @@ class App extends React.Component {
                           filterable
                           minRows={3}
                           defaultPageSize={10}
+                          ref={(r)=>this.houseTable=r}
                         />
+                        <Button
+                        onClick={()=>print({printable: this.houseTable.getResolvedState().sortedData,
+                        properties: [
+                        { field: 'card_id', displayName: 'البطاقة'},
+                        { field: 'runner_id', displayName: 'الساحب'},
+                        { field: 'type', displayName: 'النوع'},
+                        { field: 'cause', displayName: 'السبب'},
+                        { field: 'date', displayName: 'التاريخ'},
+                        { field: 'amount', displayName: 'القيمه'},
+                          ],
+                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات الشركه</h3>',
+                          style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          type: 'json'})}>
+                          طباعة
+                          </Button>
                   </Tab>
                 </Tabs>
               </div>

@@ -31,7 +31,7 @@ const arrayRunners = (jsonAccounts) => {
 export function makeRunnerData() {
     var form = new FormData();
     form.set('runners',1);
-    return fetch('http://localhost/api/',{
+    return fetch('https://a.fasicurrency.com/api/',{
         method: 'POST',
         body: form
     })

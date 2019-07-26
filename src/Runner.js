@@ -31,7 +31,7 @@ class Runner{
         form.set('cardsRec',this.cardsRec);
         form.set('cardsSent',this.cardsSent);
         form.set('fee',this.fee);
-        fetch('http://localhost/',{
+        fetch('https://a.fasicurrency.com/',{
             method:'POST',
             body:form
         }).then((res) =>{
@@ -53,7 +53,7 @@ class Runner{
         var form = new FormData();
         form.set('getRunner',1);
         form.set('id',id);
-        fetch('http://localhost/',{
+        fetch('https://a.fasicurrency.com/',{
             method:'POST',
             body:form
         }).then(res => {
@@ -66,7 +66,7 @@ class Runner{
     static retreiveAll(){
         var form = new FormData();
         form.set('runners',1);
-        fetch('http://localhost/',{
+        fetch('https://a.fasicurrency.com/',{
             method: 'POST',
             body: form
         }).then(res => {

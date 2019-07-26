@@ -28,7 +28,7 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-const url = 'http://localhost/api/';
+const url = 'https://a.fasicurrency.com/api/';
 
 export function makeCardData() {
     return fetch(url+'?cardAccounts=1')

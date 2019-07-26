@@ -1,8 +1,8 @@
 {
   "name": "fasi-frontend",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "private": true,
-  "homepage": "http://localhost/build/",
+  "homepage": "https://a.fasicurrency.com/build/",
   "dependencies": {
     "@culturehq/charts": "github:culturehq/charts",
     "axios": "^0.18.0",
@@ -16,6 +16,7 @@
     "namor": "^1.1.1",
     "npm-install-peers": "^1.2.1",
     "npm-utils": "^2.0.3",
+    "print-js": "^1.0.61",
     "react": "^16.5.2",
     "react-bootstrap": "^0.32.4",
     "react-bootstrap-table": "^4.3.1",
