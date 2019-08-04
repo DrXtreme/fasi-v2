@@ -1172,7 +1172,31 @@ class App extends React.Component {
           height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
         }}
         className="-striped -highlight"
-        /></div>)};
+        ref={(r)=>this.cardTable=r}
+        />
+        <Button
+        onClick={()=>print({printable: this.cardTable.getResolvedState().sortedData,
+        properties: [
+        { field: 'id', displayName: 'الأشاري'},
+        { field: 'owname', displayName: 'الإسم'},
+        { field: 'card_number', displayName: 'الرقم'},
+        { field: 'card_code', displayName: 'الكود'},
+        { field: 'type', displayName: 'النوع'},
+        { field: 'exp', displayName: 'الصلاحية'},
+        { field: 'state', displayName: 'الحالة'},
+        { field: 'bank', displayName: 'المصرف'},
+        { field: 'credit', displayName: 'الرصيد'},
+        { field: 'drawn', displayName: 'المسحوب'},
+        { field: 'avail', displayName: 'المتبقي'},
+        { field: 'fee_type', displayName: 'العمولة'},
+          ],
+          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات</h3>',
+          style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+          type: 'json'})}>
+          طباعة
+          </Button>
+        </div>)};
 
         const pg_queue = () => {
           const { data , loading} = this.state.queue;
@@ -2827,6 +2851,28 @@ class App extends React.Component {
                             <tr><td>تاريخ الإضافة</td><td>{runner.created}</td></tr>
                             <tr><td colSpan={2}>
                               <h6><b>جميع البطاقات التي إستلمها فالسابق</b></h6>
+                              <Button
+                              onClick={()=>print({printable: this.allCardTable.getResolvedState().sortedData,
+                              properties: [
+                              { field: 'id', displayName: 'الأشاري'},
+                              { field: 'owname', displayName: 'الإسم'},
+                              { field: 'card_number', displayName: 'الرقم'},
+                              { field: 'card_code', displayName: 'الكود'},
+                              { field: 'type', displayName: 'النوع'},
+                              { field: 'exp', displayName: 'الصلاحية'},
+                              { field: 'state', displayName: 'الحالة'},
+                              { field: 'bank', displayName: 'المصرف'},
+                              { field: 'credit', displayName: 'الرصيد'},
+                              { field: 'drawn', displayName: 'المسحوب'},
+                              { field: 'avail', displayName: 'المتبقي'},
+                              { field: 'fee_type', displayName: 'العمولة'},
+                                ],
+                                header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي إستلمها '+runner.name+' فالسابق</h3>',
+                                style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                                Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                type: 'json'})}>
+                                طباعة
+                                </Button>
                               <ReactTable
                                 columns={[
                                   {
@@ -2936,6 +2982,7 @@ class App extends React.Component {
                                 filterable
                                 minRows={3}
                                 defaultPageSize={10}
+                                ref={(r)=>this.allCardTable=r}
                                   // style={{
                                   //   height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
                                   // }}
@@ -2943,6 +2990,28 @@ class App extends React.Component {
                               </td></tr>
                               <tr><td colSpan={2}>
                               <h6><b>جميع البطاقات التي لديه الآن</b></h6>
+                              <Button
+                              onClick={()=>print({printable: this.nowCardTable.getResolvedState().sortedData,
+                              properties: [
+                              { field: 'id', displayName: 'الأشاري'},
+                              { field: 'owname', displayName: 'الإسم'},
+                              { field: 'card_number', displayName: 'الرقم'},
+                              { field: 'card_code', displayName: 'الكود'},
+                              { field: 'type', displayName: 'النوع'},
+                              { field: 'exp', displayName: 'الصلاحية'},
+                              { field: 'state', displayName: 'الحالة'},
+                              { field: 'bank', displayName: 'المصرف'},
+                              { field: 'credit', displayName: 'الرصيد'},
+                              { field: 'drawn', displayName: 'المسحوب'},
+                              { field: 'avail', displayName: 'المتبقي'},
+                              { field: 'fee_type', displayName: 'العمولة'},
+                                ],
+                                header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي لدى '+runner.name+' الآن</h3>',
+                                style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                                Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                type: 'json'})}>
+                                طباعة
+                                </Button>
                               <ReactTable
                                 columns={[
                                   {
@@ -3052,6 +3121,7 @@ class App extends React.Component {
                                 filterable
                                 minRows={3}
                                 defaultPageSize={10}
+                                ref={(r)=>this.nowCardTable=r}
                                   // style={{
                                   //   height: "400px" // This will force the table body to overflow and scroll, since there is not enough room
                                   // }}
@@ -3059,6 +3129,22 @@ class App extends React.Component {
                               </td></tr>
                               <tr><td colSpan={2}>
                                 <h6><b>آخر خمسين حركه دين له</b></h6>
+                                <Button
+                                onClick={()=>print({printable: this.debtTable.getResolvedState().sortedData,
+                                properties: [
+                                { field: 'card_id', displayName: 'البطاقة'},
+                                { field: 'runner_id', displayName: 'الساحب'},
+                                { field: 'type', displayName: 'النوع'},
+                                { field: 'cause', displayName: 'السبب'},
+                                { field: 'date', displayName: 'التاريخ'},
+                                { field: 'amount', displayName: 'القيمه'},
+                                  ],
+                                  header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">ديون و إيداعات '+runner.name+'</h3>',
+                                  style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                                  Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                  type: 'json'})}>
+                                  طباعة
+                                  </Button>
                                 <ReactTable
                                   columns={[
                                     {
@@ -3070,6 +3156,11 @@ class App extends React.Component {
                                         }
                                         return parseInt(a) > parseInt(b) ? 1 : -1;
                                       },
+                                    },
+                                    {
+                                      Header: 'إشاري البطاقة',
+                                      accessor: 'card_id', // String-based value accessors!
+                                      Cell: props => <span className='number'><Link to={`/build/admin/card/${props.value}`}>{props.value}</Link></span>
                                     },
                                     {
                                       Header: 'إشاري الساحب',
@@ -3084,6 +3175,9 @@ class App extends React.Component {
                                       Header: 'النوع',
                                       accessor: 'type', // String-based value accessors!
                                       Cell: props => props.value == "increase" ? (<span className='number' style={{backgroundColor: "green"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) : (<span className='number' style={{backgroundColor: "red"}}>{props.value == "increase" ? "زيادة" : (props.value == "decrease"? "نقص":"خطأ")}</span>) // Custom cell components!
+                                    },{
+                                      Header: 'السبب',
+                                      accessor: 'cause' // String-based value accessors!
                                     },{
                                       Header: 'التاريخ',
                                       accessor: 'date' // String-based value accessors!
@@ -3112,10 +3206,27 @@ class App extends React.Component {
                                   filterable
                                   minRows={3}
                                   defaultPageSize={10}
+                                  ref={(r)=>this.debtTable=r}
                                 />
                               </td></tr>
                               <tr><td colSpan={2}>
                                 <h6><b>آخر خمسين عموله له</b></h6>
+                                <Button
+                                onClick={()=>print({printable: this.runFeeTable.getResolvedState().sortedData,
+                                properties: [
+                                { field: 'card_id', displayName: 'البطاقة'},
+                                { field: 'runner_id', displayName: 'الساحب'},
+                                { field: 'type', displayName: 'النوع'},
+                                { field: 'cause', displayName: 'السبب'},
+                                { field: 'date', displayName: 'التاريخ'},
+                                { field: 'amount', displayName: 'القيمه'},
+                                  ],
+                                  header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl"> عمولات '+runner.name+'</h3>',
+                                  style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
+                                  Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                  type: 'json'})}>
+                                  طباعة
+                                  </Button>
                                 <ReactTable
                                   columns={[
                                     {
@@ -3176,6 +3287,7 @@ class App extends React.Component {
                                   filterable
                                   minRows={3}
                                   defaultPageSize={10}
+                                  ref={(r)=>this.runFeeTable=r}
                                 />
                               </td></tr>
                             <tr><td><LinkContainer to="/build/admin/sendCard"><Button className="btn btn-info">إرسال بطاقات</Button></LinkContainer></td><td><Table><tr><td><Button className="btn btn-warning" onClick={this.opento}>تعديل</Button></td>
