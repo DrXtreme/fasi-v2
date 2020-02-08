@@ -1190,9 +1190,9 @@ class App extends React.Component {
         { field: 'avail', displayName: 'المتبقي'},
         { field: 'fee_type', displayName: 'العمولة'},
           ],
-          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات</h3>',
+          header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات</h3>',
           style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+          Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
           type: 'json'})}>
           طباعة
           </Button>
@@ -2413,7 +2413,7 @@ class App extends React.Component {
         const home_header = () => (
           <header>
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">مرحبا بك في شركة الفاسي لخدمات الصرافة</h1>
+          <h1 className="App-title">مرحبا بك في نسخة تجريبية من منظومة البطاقات</h1>
           </header>
         );
 
@@ -2867,9 +2867,9 @@ class App extends React.Component {
                               { field: 'avail', displayName: 'المتبقي'},
                               { field: 'fee_type', displayName: 'العمولة'},
                                 ],
-                                header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي إستلمها '+runner.name+' فالسابق</h3>',
+                                header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي إستلمها '+runner.name+' فالسابق</h3>',
                                 style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                                Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                                 type: 'json'})}>
                                 طباعة
                                 </Button>
@@ -3006,9 +3006,9 @@ class App extends React.Component {
                               { field: 'avail', displayName: 'المتبقي'},
                               { field: 'fee_type', displayName: 'العمولة'},
                                 ],
-                                header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي لدى '+runner.name+' الآن</h3>',
+                                header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3" dir="rtl">جميع البطاقات التي لدى '+runner.name+' الآن</h3>',
                                 style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                                Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                                 type: 'json'})}>
                                 طباعة
                                 </Button>
@@ -3139,9 +3139,9 @@ class App extends React.Component {
                                 { field: 'date', displayName: 'التاريخ'},
                                 { field: 'amount', displayName: 'القيمه'},
                                   ],
-                                  header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl">ديون و إيداعات '+runner.name+'</h3>',
+                                  header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3" dir="rtl">ديون و إيداعات '+runner.name+'</h3>',
                                   style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                                  Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                  Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                                   type: 'json'})}>
                                   طباعة
                                   </Button>
@@ -3221,9 +3221,9 @@ class App extends React.Component {
                                 { field: 'date', displayName: 'التاريخ'},
                                 { field: 'amount', displayName: 'القيمه'},
                                   ],
-                                  header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3" dir="rtl"> عمولات '+runner.name+'</h3>',
+                                  header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3" dir="rtl"> عمولات '+runner.name+'</h3>',
                                   style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                                  Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                                  Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                                   type: 'json'})}>
                                   طباعة
                                   </Button>
@@ -3580,7 +3580,7 @@ class App extends React.Component {
               <div>
                 <Table>
                   <thead>
-                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>نسخة تجريبية من منظومة البطاقات</h1></b></td></tr>
                     <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
                   </thead>
                   <tbody>
@@ -3597,7 +3597,7 @@ class App extends React.Component {
                 <br></br>
                 <Table>
                   <thead>
-                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                    <tr><td><u>_______{this.props.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>نسخة تجريبية من منظومة البطاقات</h1></b></td></tr>
                     <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
                   </thead>
                   <tbody>
@@ -3713,7 +3713,7 @@ class App extends React.Component {
                           <p></p>
                           <Table>
                             <thead>
-                              <tr><td><u>_______{this.state.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+                              <tr><td><u>_______{this.state.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>نسخة تجريبية من منظومة البطاقات</h1></b></td></tr>
                               <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
                             </thead>
                             <tbody>
@@ -3764,7 +3764,7 @@ class App extends React.Component {
         //                 <p></p>
         //                 <Table>
         //                   <thead>
-        //                     <tr><td><u>_______{this.state.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>شركة الفاسي لخدمات الصرافة</h1></b></td></tr>
+        //                     <tr><td><u>_______{this.state.date}</u> التاريخ و الوقت</td><td colSpan="2" style={{textAlign:"center"}}><b><h1>نسخة تجريبية من منظومة البطاقات</h1></b></td></tr>
         //                     <tr><td></td><td colSpan="2" style={{textAlign:"center"}}><b>واصل إستلام</b></td></tr>
         //                   </thead>
         //                   <tbody>
@@ -4617,9 +4617,9 @@ class App extends React.Component {
                         { field: 'date', displayName: 'التاريخ'},
                         { field: 'amount', displayName: 'القيمه'},
                           ],
-                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">التسليمات</h3>',
+                          header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3">التسليمات</h3>',
                           style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                           type: 'json'})}>
                           طباعة
                           </Button>
@@ -4737,9 +4737,9 @@ class App extends React.Component {
                         { field: 'date', displayName: 'التاريخ'},
                         { field: 'amount', displayName: 'القيمه'},
                           ],
-                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات البطاقات</h3>',
+                          header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3">معاملات البطاقات</h3>',
                           style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                           type: 'json'})}>
                           طباعة
                           </Button>
@@ -4832,9 +4832,9 @@ class App extends React.Component {
                           { field: 'date', displayName: 'التاريخ'},
                           { field: 'amount', displayName: 'القيمه'},
                             ],
-                            header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">العمولات</h3>',
+                            header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3">العمولات</h3>',
                             style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                            Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                            Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                             type: 'json'})}>
                             طباعة
                             </Button>
@@ -4926,9 +4926,9 @@ class App extends React.Component {
                             { field: 'date', displayName: 'التاريخ'},
                             { field: 'amount', displayName: 'القيمه'},
                               ],
-                              header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات السحب و الديون</h3>',
+                              header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3">معاملات السحب و الديون</h3>',
                               style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                              Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                              Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                               type: 'json'})}>
                               طباعة
                               </Button>
@@ -5023,9 +5023,9 @@ class App extends React.Component {
                         { field: 'date', displayName: 'التاريخ'},
                         { field: 'amount', displayName: 'القيمه'},
                           ],
-                          header: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1><h3 class="custom-h3">معاملات الشركه</h3>',
+                          header: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1><h3 class="custom-h3">معاملات الشركه</h3>',
                           style: '.custom-h3 { font-style: italic; text-align: center; } .custom-h1 { font-style: italic; text-align: center; }',
-                          Footer: '<h1 class="custom-h1">شركة الفاسي لخدمات الصرافة</h1>',
+                          Footer: '<h1 class="custom-h1">نسخة تجريبية من منظومة البطاقات</h1>',
                           type: 'json'})}>
                           طباعة
                           </Button>
