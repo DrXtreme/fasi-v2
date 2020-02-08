@@ -30,8 +30,8 @@ import matchSorter from 'match-sorter';
 import print from 'print-js'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-// const url = 'https://a.fasicurrency.com/api/';
-const url = 'https://a.fasicurrency.com/api/';
+// const url = 'https://atest.fasicurrency.com/api/';
+const url = 'https://atest.fasicurrency.com/api/';
 
 
 

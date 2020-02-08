@@ -24,7 +24,7 @@ const arrayAccounts = (jsonAccounts) => {
 
 
 export function makeData() {
-    return fetch('https://a.fasicurrency.com/api/?accounts=1')
+    return fetch('https://atest.fasicurrency.com/api/?accounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => {

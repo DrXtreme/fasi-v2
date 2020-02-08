@@ -1,5 +1,5 @@
 export function PostData(type, userData) {
-    let BaseURL = 'https://a.fasicurrency.com/api/';
+    let BaseURL = 'https://atest.fasicurrency.com/api/';
     console.log(BaseURL+type);
     return new Promise((resolve, reject) =>{
     fetch(BaseURL+type, {
