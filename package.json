@@ -2,7 +2,7 @@
   "name": "fasi-frontend",
   "version": "0.1.6",
   "private": true,
-  "homepage": "https://a.fasicurrency.com/build/",
+  "homepage": "https://atest.fasicurrency.com/",
   "dependencies": {
     "@culturehq/charts": "github:culturehq/charts",
     "axios": "^0.18.0",
