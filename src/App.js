@@ -34,13 +34,8 @@ import {
 } from 'darkreader';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
-<<<<<<< HEAD
-// const url = 'https://atest.fasicurrency.com/api/';
-const url = 'https://atest.fasicurrency.com/api/';
-=======
 // const url = 'http://localhost:8080/api/';
 const url = 'http://localhost:8080/api/';
->>>>>>> tmp
 
 
 
