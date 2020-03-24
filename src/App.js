@@ -1019,6 +1019,7 @@ class App extends React.Component {
   }
 
   componentDidMount(){
+    {this.getDarkModeStatus()};
     {this.fetchVDepositsData()};
     {this.fetchDepositsData()};
     {this.fetchLogData()};
