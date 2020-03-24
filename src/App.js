@@ -28,10 +28,19 @@ import "react-toggle-component/styles.css";
 import { isNumber } from 'highcharts';
 import matchSorter from 'match-sorter';
 import print from 'print-js'
+import {
+  enable as enableDarkMode,
+  disable as disableDarkMode,
+} from 'darkreader';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
+<<<<<<< HEAD
 // const url = 'https://atest.fasicurrency.com/api/';
 const url = 'https://atest.fasicurrency.com/api/';
+=======
+// const url = 'http://localhost:8080/api/';
+const url = 'http://localhost:8080/api/';
+>>>>>>> tmp
 
 
 
@@ -196,7 +205,8 @@ class App extends React.Component {
       date: '',
       redirect: false,
       redirectTo: "",
-      bankChecked: false
+      bankChecked: false,
+      darkreader: false
     };
     this.fetchCustomerData = this.fetchCustomerData.bind(this);
     this.fetchCardData = this.fetchCardData.bind(this);
@@ -243,6 +253,53 @@ class App extends React.Component {
     this.handleBankEditSubmit = this.handleBankEditSubmit.bind(this);
     this.handleSelectBankChange = this.handleSelectBankChange.bind(this);
     this.authenticate = this.authenticate.bind(this);
+    this.darkreaderToggle = this.darkreaderToggle.bind(this);
+    this.getDarkModeStatus = this.getDarkModeStatus.bind(this);
+  }
+
+  getDarkModeStatus(){
+    let state = this.state;
+    if(localStorage.getItem('darkmode')!==null){
+      state.darkreader = localStorage.getItem('darkmode')==="true"?true:localStorage.getItem('darkmode')==="false"?false:false;
+      this.setState(state);
+      if(this.state.darkreader){
+        enableDarkMode({
+          brightness: 100,
+          contrast: 90,
+          sepia: 10,
+          })
+        let state = this.state;
+        state.darkreader = true;
+        this.setState(state);
+        localStorage.setItem('darkmode',state.darkreader);
+      }else{
+        disableDarkMode();
+        let state = this.state;
+        state.darkreader = false;
+        this.setState(state);
+        localStorage.setItem('darkmode',state.darkreader);
+      }
+    }
+  }
+
+  darkreaderToggle(){
+    if(!this.state.darkreader){
+      enableDarkMode({
+        brightness: 100,
+        contrast: 90,
+        sepia: 10,
+        })
+      let state = this.state;
+      state.darkreader = true;
+      this.setState(state);
+      localStorage.setItem('darkmode',state.darkreader);
+    }else{
+      disableDarkMode();
+      let state = this.state;
+      state.darkreader = false;
+      this.setState(state);
+      localStorage.setItem('darkmode',state.darkreader);
+    }
   }
 
    // fake authentication Promise
@@ -460,6 +517,9 @@ class App extends React.Component {
     .then(res => res.json())
     .then(resJson => {
       this.setState({housefee:resJson.amount});
+    })
+    .catch(err=>{
+      console.error("can't set house fee");
     })
   }
 
@@ -5142,12 +5202,15 @@ class App extends React.Component {
               </NavDropdown>
             </Nav>
             <Nav pullRight>
-              <NavItem eventKey={1}>
+              <NavItem eventKey={1} onClick={this.darkreaderToggle}>
+                وضع الظلام
+              </NavItem>
+              {/* <NavItem eventKey={2}>
                 المساعدة
               </NavItem>
-              <NavItem eventKey={2}>
+              <NavItem eventKey={3}>
                 حول
-              </NavItem>
+              </NavItem> */}
             </Nav>
           </Navbar.Collapse>
         </Navbar>

@@ -31,7 +31,11 @@ class Runner{
         form.set('cardsRec',this.cardsRec);
         form.set('cardsSent',this.cardsSent);
         form.set('fee',this.fee);
+<<<<<<< HEAD
         fetch('https://atest.fasicurrency.com/',{
+=======
+        fetch('http://localhost:8080/',{
+>>>>>>> tmp
             method:'POST',
             body:form
         }).then((res) =>{
@@ -53,7 +57,11 @@ class Runner{
         var form = new FormData();
         form.set('getRunner',1);
         form.set('id',id);
+<<<<<<< HEAD
         fetch('https://atest.fasicurrency.com/',{
+=======
+        fetch('http://localhost:8080/',{
+>>>>>>> tmp
             method:'POST',
             body:form
         }).then(res => {
@@ -66,7 +74,11 @@ class Runner{
     static retreiveAll(){
         var form = new FormData();
         form.set('runners',1);
+<<<<<<< HEAD
         fetch('https://atest.fasicurrency.com/',{
+=======
+        fetch('http://localhost:8080/',{
+>>>>>>> tmp
             method: 'POST',
             body: form
         }).then(res => {

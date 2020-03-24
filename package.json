@@ -1,14 +1,19 @@
 {
   "name": "fasi-frontend",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
+<<<<<<< HEAD
   "homepage": "https://atest.fasicurrency.com/",
+=======
+  "homepage": "https://a2.fasicurrency.com/",
+>>>>>>> tmp
   "dependencies": {
     "@culturehq/charts": "github:culturehq/charts",
     "axios": "^0.18.0",
     "bizcharts": "^3.4.3",
     "bootstrap": "^4.3.1",
     "create-react-class": "^15.6.3",
+    "darkreader": "^4.9.2",
     "highcharts": "^7.0.2",
     "highcharts-react": "0.0.3",
     "match-sorter": "^2.3.0",

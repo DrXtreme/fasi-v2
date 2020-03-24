@@ -1,6 +1,6 @@
 RewriteEngine On
 
-RewriteBase /build/
+RewriteBase /
 
 Header add Access-Control-Allow-Origin "*"
 Header add Access-Control-Allow-Headers "origin, x-requested-with, content-type"
