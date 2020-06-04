@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
-import {PostData} from './PostData';
 import './Login.css';
 import { NotificationManager } from 'react-notifications';
 import {Button} from 'react-bootstrap';
-import { MDBInput, Table } from "mdbreact";
 
 class Login extends Component {
 
@@ -13,7 +11,8 @@ class Login extends Component {
     this.state = {
      username: '',
      password: '',
-     redirectToReferrer: false
+     redirectToReferrer: false,
+     disabled: false
     };
 
     this.login = this.login.bind(this);
@@ -25,16 +24,21 @@ class Login extends Component {
 
   login(e) {
     e.preventDefault();
+    this.setState({disabled:true});
     if(this.state.username && this.state.password){
-      PostData('login',this.state).then((result) => {
-       let responseJson = result;
-       if(responseJson.token){         
-         sessionStorage.setItem('userData',JSON.stringify(responseJson));
-         this.setState({redirectToReferrer: true});
+      fetch(''+process.env.REACT_APP_SERVER_URL+'/login',{
+        method: 'POST',
+        body: JSON.stringify(this.state)
+      })
+      .then((result) => {
+       if(result.status===200){         
+        //  sessionStorage.setItem('userData',JSON.stringify(responseJson));
+        //  this.props.afterLogin();
          NotificationManager.success("تم الدخول بنجاح كمدير","نجاح");
-         window.location.replace('/build/admin/customers');
+         window.location.replace('/admin/customers');
        }else{
-         NotificationManager.error(responseJson.error.text,"خطأ");
+         NotificationManager.error("لا يمكنك تسجيل الدخول","خطأ");
+         this.setState({disabled:false});
        }
       });
     }
@@ -44,8 +48,9 @@ class Login extends Component {
     this.setState({[e.target.name]:e.target.value});
    }
 
+  //  componentDidMount(){
 
-
+  //  }
 
   render() {
 
@@ -58,10 +63,10 @@ class Login extends Component {
           <h4>تسجيل الدخول</h4><br />
           <form onSubmit={this.login} style={{textAlign:"center",width:"100%"}}>
             <label>معرف الدخول</label><br />
-            <input type="text" name="username" placeholder="Username" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}}/><br />
+            <input type="text" name="username" placeholder="Username" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}} disabled={this.state.disabled}/><br />
             <label>كلمة السر</label><br />
-            <input type="password" name="password"  placeholder="Password" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}}/><br /><br />
-            <Button type="submit" className="btn btn-info" value="Login" onClick={this.login}>دخول</Button>
+            <input type="password" name="password"  placeholder="Password" className="form-control" onChange={this.onChange} style={{width:'300px',margin: 'auto'}} disabled={this.state.disabled}/><br /><br />
+            <Button type="submit" className="btn btn-info" value="Login" onClick={this.login} disabled={this.state.disabled}>دخول</Button>
           </form>
       </div>
     );

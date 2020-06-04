@@ -7,7 +7,14 @@ class Runner{
     //     this.cardsSent=cardsSent;
     //     this.fee=fee;
     // }
-
+/**
+ * 
+ * ************************************************
+ * ************************************************
+ * DEPRECATED CODE*********************************
+ * ************************************************
+ * ************************************************
+ */
     constructor(id,name,drawn,fee,cardsRec,cardsSent,diposited){
         this.id=id;
         this.name=name;

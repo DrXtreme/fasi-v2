@@ -1,5 +1,4 @@
 import "./index.css";
-import 'whatwg-fetch';
 
 let raw = [];
 
@@ -24,7 +23,7 @@ const arrayAccounts = (jsonAccounts) => {
 
 
 export function makeData() {
-    return fetch('http://localhost:8080/api/?accounts=1')
+    return fetch(''+process.env.REACT_APP_SERVER_URL+'/?accounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => {

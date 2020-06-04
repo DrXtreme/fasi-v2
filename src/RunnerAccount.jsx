@@ -1,5 +1,4 @@
 import "./index.css";
-import 'whatwg-fetch';
 
 let raw = [];
 
@@ -31,7 +30,7 @@ const arrayRunners = (jsonAccounts) => {
 export function makeRunnerData() {
     var form = new FormData();
     form.set('runners',1);
-    return fetch('http://localhost:8080/api/',{
+    return fetch(''+process.env.REACT_APP_SERVER_URL+'/',{
         method: 'POST',
         body: form
     })

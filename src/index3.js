@@ -2,7 +2,6 @@ import React from "react";
 import { render, ReactDOM } from "react-dom";
 import _ from "lodash";
 import { makeData} from "./Utils";
-//import JsonTable from 'react-json-table'
 
 // Import React Table
 import ReactTable from "react-table";

@@ -1,5 +1,4 @@
 import React from "react";
-import namor from "namor";
 import "./index.css";
 
 let raw;
@@ -11,24 +10,7 @@ const range = len => {
   return arr;
 };
 
-// const newPerson = () => {
-//   const statusChance = Math.random();
-//   return {
-//     firstName: namor.generate({
-//       words: 1,
-//       numbers: 0
-//     }),
-//     lastName: namor.generate({
-//       words: 1,
-//       numbers: 0
-//     }),
-//     age: Math.floor(Math.random() * 30),
-//     visits: Math.floor(Math.random() * 100),
-//     progress: Math.floor(Math.random() * 100),
-//     status: statusChance > 0.66 ?
-//       "relationship" : statusChance > 0.33 ? "complicated" : "single"
-//   };
-// };
+
 class Account{
   constructor(name,cards,phone,cards_id){
     this.name=name;
@@ -47,7 +29,7 @@ const arrayAccounts = (jsonAccounts) => {
 }
 
 export function makeData() {
-  fetch('http://localhost:8080/api/?accounts=1')
+  fetch(''+process.env.REACT_APP_SERVER_URL+'/?accounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => console.log(raw))

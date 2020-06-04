@@ -10,7 +10,7 @@ class Welcome extends Component {
  return (
  <div style={{alignContent:"center"}}>
  
- <Carousel controls={false}>
+ <Carousel controls={true}>
     <Carousel.Item>
     {/* <LazyLoad height={400}> */}
         {/* <img
@@ -20,10 +20,10 @@ class Welcome extends Component {
         /> */}
     {/* </LazyLoad> */}
     <div style={{height:"300px",width:"100%",padding:"10px",margin:"10px"}}></div>
-    <div className="filler" />
+    <div className="filler"/>
         <Carousel.Caption>
-        <h3>التكنولوجيا هي أي شيء لم يكن موجودًا عند ولادتك</h3>
-        <LinkContainer to="/build/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
+        <h3 style={{color:"#ffd700"}}>التكنولوجيا هي أي شيء لم يكن موجودًا عند ولادتك</h3>
+        <LinkContainer to="/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
         </Carousel.Caption>
     </Carousel.Item>
     <Carousel.Item>
@@ -35,8 +35,8 @@ class Welcome extends Component {
         /> */}
         <div style={{height:"300px",width:"100%"}}></div>
         <Carousel.Caption>
-        <h3>لإتقان تقنية جديدة ، عليك اللعب بها.</h3>
-        <LinkContainer to="/build/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
+        <h3 style={{color:"#ffd700"}}>لإتقان تقنية جديدة ، عليك اللعب بها.</h3>
+        <LinkContainer to="/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
         </Carousel.Caption>
     </Carousel.Item>
     <Carousel.Item>
@@ -48,12 +48,12 @@ class Welcome extends Component {
         /> */}
         <div style={{height:"300px",width:"100%"}}></div>
         <Carousel.Caption>
-        <h3>العصر الحجري. العصر البرونزي. العصر الحديدي. نحدد ملاحم كاملة للبشرية من خلال التكنولوجيا التي يستخدمونها.</h3>
-        <LinkContainer to="/build/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
+        <h3 style={{color:"#ffd700"}}>العصر الحجري. العصر البرونزي. العصر الحديدي. نحدد ملاحم كاملة للبشرية من خلال التكنولوجيا التي يستخدمونها.</h3>
+        <LinkContainer to="/login"><Button className="btn btn-info">الدخول</Button></LinkContainer>
         </Carousel.Caption>
     </Carousel.Item>
 </Carousel>
- {/* <LinkContainer to="/build/signup"><Button className="button success">التسجيل</Button></LinkContainer> */}
+ {/* <LinkContainer to="/signup"><Button className="button success">التسجيل</Button></LinkContainer> */}
  </div>
 );
 }

@@ -1,5 +1,4 @@
 import "./index.css";
-import 'whatwg-fetch';
 
 let raw = [];
 
@@ -17,7 +16,8 @@ const newCardAccount = (jsonObj) => {
         avail: jsonObj.avail,
         card_code: jsonObj.card_code,
         card_number: jsonObj.card_number,
-        fee_type: jsonObj.fee_type
+        fee_type: jsonObj.fee_type,
+        act_bal: jsonObj.act_bal
     };
 };
 
@@ -28,10 +28,30 @@ const arrayCardAccounts = (jsonAccounts) => {
     }
     return arr;
 }
-const url = 'http://localhost:8080/api/';
+const url = ''+process.env.REACT_APP_SERVER_URL+'/';
 
 export function makeCardData() {
     return fetch(url+'?cardAccounts=1')
+    .then(res => res.json())
+    .then(data => raw = data)
+    .then(() => {
+      raw = arrayCardAccounts(raw);
+      return raw;
+    });
+}
+
+export function makeDebtCardData() {
+    return fetch(url+'?debtcardaccounts=1')
+    .then(res => res.json())
+    .then(data => raw = data)
+    .then(() => {
+      raw = arrayCardAccounts(raw);
+      return raw;
+    });
+}
+
+export function makeCreditCardData() {
+    return fetch(url+'?creditcardaccounts=1')
     .then(res => res.json())
     .then(data => raw = data)
     .then(() => {
