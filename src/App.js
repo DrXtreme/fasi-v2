@@ -1216,17 +1216,17 @@ export default class App extends React.Component {
         onFetchData={this.fetchCardData} // Request new data when things change
         noDataText="ﻻ توجد بيانات مطابقة !"
         loadingText={
-                            <>
-                            <Spinner animation="grow" variant="primary" />
-                            <Spinner animation="grow" variant="secondary" />
-                            <Spinner animation="grow" variant="success" />
-                            <Spinner animation="grow" variant="danger" />
-                            <Spinner animation="grow" variant="warning" />
-                            <Spinner animation="grow" variant="info" />
-                            <Spinner animation="grow" variant="light" />
-                            <Spinner animation="grow" variant="dark" />
-                            </>
-                            }
+                    <>
+                    <Spinner animation="grow" variant="primary" />
+                    <Spinner animation="grow" variant="secondary" />
+                    <Spinner animation="grow" variant="success" />
+                    <Spinner animation="grow" variant="danger" />
+                    <Spinner animation="grow" variant="warning" />
+                    <Spinner animation="grow" variant="info" />
+                    <Spinner animation="grow" variant="light" />
+                    <Spinner animation="grow" variant="dark" />
+                    </>
+                    }
         showPaginationTop={true}
         nextText="التالي"
         previousText="السابق"
@@ -3700,7 +3700,7 @@ const pg_debtcard = () => {
                 <thead>
                   <tr><td><Button className="btn btn-info" onClick={this.open}>تغيير العمولة</Button></td><td>{this.state.housefee}</td><td dir="rtl">عمولة الشركة:</td></tr>
                   <tr><td><Button className="btn btn-info" disabled>تغيير اللغة</Button></td><td>العربية</td><td>اللغة</td></tr>
-                  <tr><td><Button className="btn btn-info" href={process.env.REACT_APP_SERVER_URL+"/backup"} target="_blank">تنزيل</Button></td><td></td><td>تنزيل نسخة من قاعدة البيانات</td></tr>
+                  <tr><td><Button className="btn btn-info" href={process.env.REACT_APP_SERVER_URL+"/index.php?backup=1"} target="_blank">تنزيل</Button></td><td></td><td>تنزيل نسخة من قاعدة البيانات</td></tr>
                   <Modal
                           aria-labelledby='modal-label'
                           style={modalStyle}
